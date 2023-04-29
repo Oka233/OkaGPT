@@ -1,5 +1,5 @@
 import dateUtils from '@/utils/dateUtils'
-import { users } from '@/utils/Chat/users'
+import { users, roles } from '@/utils/Chat/users'
 
 export class Message {
   constructor(options) {
@@ -15,6 +15,12 @@ export class Message {
       username: users[this.senderId],
       date: this.date,
       timestamp: this.timestamp
+    }
+  }
+  toOpenAI = function() {
+    return {
+      content: this.content,
+      role: roles[this.senderId]
     }
   }
 }
@@ -39,5 +45,12 @@ export class MessageHistory {
       res._id = index
       return res
     })
+  }
+  toOpenAI = function() {
+    const mh = this.messages.map((message, index) => {
+      const res = message.toOpenAI()
+      return res
+    })
+    return mh
   }
 }

@@ -4,10 +4,10 @@
     :show-emojis="'false'"
     :show-reaction-emojis="'false'"
     :emojis-suggestion-enabled="'false'"
-    :loading-rooms="loadingRooms"
-    :loading-messages="loadingMessages"
-    :rooms-loaded="roomsLoaded"
-    :messages-loaded="messagesLoaded"
+    :loading-rooms="loadingRooms.toString()"
+    :loading-messages="loadingMessages.toString()"
+    :rooms-loaded="roomsLoaded.toString()"
+    :messages-loaded="messagesLoaded.toString()"
     :current-user-id="currentUserId"
     :rooms="JSON.stringify(rooms)"
     :messages="JSON.stringify(messages)"
@@ -19,8 +19,7 @@
 
 <script>
 import { register } from 'vue-advanced-chat'
-import dateUtils from '@/utils/dateUtils'
-import { v4 as uuidv4 } from 'uuid'
+import { showErrorMessage } from '@/utils/Models/openaiErrorMessage'
 register()
 
 export default {
@@ -62,57 +61,6 @@ export default {
       messagesLoaded: true,
       currentUserId: 'me_id',
       currentRoomId: null,
-      // rooms: [
-      //   {
-      //     roomId: '1',
-      //     roomName: 'Room 1',
-      //     avatar: 'assets/imgs/people.png',
-      //     unreadCount: 4,
-      //     index: 3,
-      //     lastMessage: {
-      //       _id: 'xyz',
-      //       content: 'Last message received',
-      //       senderId: '1234',
-      //       username: 'John Doe',
-      //       timestamp: '10:20',
-      //       saved: true,
-      //       distributed: false,
-      //       seen: false,
-      //       new: true
-      //     },
-      //     users: [
-      //       {
-      //         _id: '1234',
-      //         username: 'John Doe',
-      //         avatar: 'assets/imgs/doe.png',
-      //         status: {
-      //           state: 'online',
-      //           lastChanged: 'today, 14:30'
-      //         }
-      //       },
-      //       {
-      //         _id: '4321',
-      //         username: 'John Snow',
-      //         avatar: 'assets/imgs/snow.png',
-      //         status: {
-      //           state: 'offline',
-      //           lastChanged: '14 July, 20:00'
-      //         }
-      //       }
-      //     ],
-      //     typingUsers: [ 4321 ]
-      //   }
-      // ],
-      // messages: [
-      //   {
-      //     _id: 0,
-      //     content: `222`,
-      //     senderId: '4321',
-      //     username: 'John Doe',
-      //     date: '13 November',
-      //     timestamp: '10:20'
-      //   }
-      // ],
       messages: [],
       roomActions: [
         { name: 'remove', title: '删除对话' },
@@ -133,41 +81,31 @@ export default {
       console.log('fetchMessage', room, options)
       setTimeout(() => {
         const currentChat = this.chats[room.index]
-        let messagePromise
         // if (options.reset) {
-        messagePromise = currentChat.initMessage()
-        // } else {
-        //   messagePromise = currentChat.nextMessage()
-        // }
+        const [messagePromise, _] = currentChat.nextMessage()
         messagePromise.then(res => {
           this.messages = [...res]
-          setTimeout(_ => {
-            res[0].content = 'Yooooooo7777'
-            this.messages = [...res]
-          }, 200)
-          setTimeout(_ => {
-            res[0].content = 'Yooooooo77778888'
-            this.messages = [...res]
-          }, 400)
-          setTimeout(_ => {
-            res[0].content = 'Yooooooo77778888\n1234'
-            this.messages = [...res]
-          }, 600)
-          setTimeout(_ => {
-            res[0].content = 'Yooooooo77778888\n12345678'
-            this.messages = [...res]
-            console.log(this.messages)
-          }, 800)
+          // setTimeout(_ => {
+          //   res[0].content = 'Yooooooo7777'
+          //   this.messages = [...res]
+          // }, 200)
+          // setTimeout(_ => {
+          //   res[0].content = 'Yooooooo77778888'
+          //   this.messages = [...res]
+          // }, 400)
+          // setTimeout(_ => {
+          //   res[0].content = 'Yooooooo77778888\n1234'
+          //   this.messages = [...res]
+          // }, 600)
+          // setTimeout(_ => {
+          //   res[0].content = 'Yooooooo77778888\n12345678'
+          //   this.messages = [...res]
+          //   console.log(this.messages)
+          // }, 800)
         })
 
         this.messagesLoaded = true
       })
-    },
-    fetchReplyMessage() {
-
-    },
-    fetchHistoryMessages() {
-
     },
     sendMessage({ roomId, content, files, replyMessage, usersTag }) {
       console.log('sendMessage', content)
@@ -176,13 +114,16 @@ export default {
         senderId: 'me_id',
         content: content
       })
-      console.log(messageSent)
       this.messages = [...this.messages, ...messageSent]
-      messagePromise.then(res => {
-        if (currentChat.chatId === this.currentRoomId) {
-          this.messages = [...this.messages, ...res]
-        }
-      })
+      messagePromise
+        .then(res => {
+          if (currentChat.chatId === this.currentRoomId) {
+            this.messages = [...this.messages, ...res]
+          }
+        })
+        .catch(e => {
+          showErrorMessage(e)
+        })
     }
   }
 }
