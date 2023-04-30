@@ -4,10 +4,12 @@
     <ChatManager
       ref="chatManager"
       class="chat-left"
+      :get-setting="getSetting"
     />
     <div class="chat-right">
-      <el-button @click="$refs.chatManager.addChat()">add chat</el-button>
+      <el-button @click="$refs.chatManager.addChat()">Add New Chat</el-button>
       <ChatSettings
+        ref="chatSettings"
         @ready="startChat"
         @freeze="freezeChat"
       />
@@ -33,15 +35,17 @@ export default {
     }
   },
   mounted() {
-
   },
   methods: {
     startChat() {
       // 没有保证在chatManager mounted之后调用，出错了再检查这里
-      this.$refs.chatManager.startChat()
+      this.$refs.chatManager.allowChat()
     },
     freezeChat() {
       this.$refs.chatManager.freezeChat()
+    },
+    getSetting(key) {
+      return this.$refs.chatSettings.getSetting(key)
     }
   }
 }

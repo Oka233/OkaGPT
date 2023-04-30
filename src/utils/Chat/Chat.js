@@ -6,17 +6,16 @@ import { OpenAI } from '@/utils/Models/OpenAI'
 class Chat {
   constructor(options) {
     this.chatId = uuidv4()
-    this.userName = `GPT No.${Object.keys(users).length}`
+    // this.userName = `GPT No.${Object.keys(users).length}`
+    this.userName = 'GPT'
     users[this.chatId] = this.userName
     roles[this.chatId] = 'assistant'
-    this.messageHistory = new MessageHistory([
-      // {
-      //   senderId: this.chatId,
-      //   content: 'Yooooooo'
-      // }
-    ])
-    this.AI = new OpenAI()
+    this.messageHistory = new MessageHistory([])
+    this.AI = new OpenAI(options)
     // this.AI.listEngines()
+  }
+  getMessageHistory() {
+    return this.messageHistory.toVAC()
   }
   nextMessage(message) {
     /**
@@ -56,6 +55,28 @@ class Chat {
       }),
       messageSent
     ]
+  }
+  streamNextMessage(message, callback) {
+    let messageSent
+    if (message) {
+      this.messageHistory.push(message)
+      messageSent = this.messageHistory.recent()
+    }
+    // 需要在push用户输入和push空消息之间生成给gpt的对话列表
+    const messageHistory = this.messageHistory.toOpenAI()
+    this.messageHistory.push({
+      content: '',
+      senderId: this.chatId
+    })
+    const streamAnswer = (ans) => {
+      const answerNum = this.messageHistory.streamMessage(ans)
+      callback(this.messageHistory.toVAC().slice(-answerNum), messageSent)
+    }
+    this.AI.streamChat(
+      messageHistory,
+      streamAnswer
+    )
+    return messageSent
   }
 }
 

@@ -1,5 +1,8 @@
 <template>
   <vue-advanced-chat
+    :height="`${vacHeight}px`"
+    :show-audio="'false'"
+    :show-new-messages-divider="'false'"
     :username-options="JSON.stringify({minUsers: 1, currentUser: true})"
     :show-emojis="'false'"
     :show-reaction-emojis="'false'"
@@ -14,12 +17,14 @@
     :room-actions="JSON.stringify(roomActions)"
     @send-message="sendMessage($event.detail[0])"
     @fetch-messages="fetchMessages($event.detail[0])"
-  />
+  >
+  </vue-advanced-chat>
 </template>
 
 <script>
 import { register } from 'vue-advanced-chat'
 import { showErrorMessage } from '@/utils/Models/openaiErrorMessage'
+import storage from '@/utils/storage'
 register()
 
 export default {
@@ -34,10 +39,10 @@ export default {
   },
   computed: {
     rooms() {
-      return this.chats.map((c, index) => {
+      const rooms = this.chats.map((c, index) => {
         return {
           roomId: `${c.chatId}`,
-          roomName: `Room ${index}`,
+          roomName: `Chat ${index}`,
           index: index,
           users: [
             {
@@ -51,10 +56,13 @@ export default {
           ]
         }
       })
+      rooms.typingUsers = this.typingUsers
+      return rooms
     }
   },
   data() {
     return {
+      vacHeight: null,
       loadingRooms: false,
       loadingMessages: false,
       roomsLoaded: true,
@@ -65,65 +73,87 @@ export default {
       roomActions: [
         { name: 'remove', title: '删除对话' },
         { name: 'export', title: '导出对话' }
-      ]
+      ],
+      typingUsers: []
     }
   },
   created() {
-    console.log(this._data)
   },
   mounted() {
+    this.resizeHandler()
+    window.onresize = () => {
+      return (() => {
+        this.resizeHandler()
+      })()
+    }
     // messages必须在mounted后加入才能有效
     // this.messages = this.addMessages(true)
   },
   methods: {
-    fetchMessages({ room, options }) {
-      this.currentRoomId = room.roomId
-      console.log('fetchMessage', room, options)
-      setTimeout(() => {
-        const currentChat = this.chats[room.index]
-        // if (options.reset) {
-        const [messagePromise, _] = currentChat.nextMessage()
-        messagePromise.then(res => {
-          this.messages = [...res]
-          // setTimeout(_ => {
-          //   res[0].content = 'Yooooooo7777'
-          //   this.messages = [...res]
-          // }, 200)
-          // setTimeout(_ => {
-          //   res[0].content = 'Yooooooo77778888'
-          //   this.messages = [...res]
-          // }, 400)
-          // setTimeout(_ => {
-          //   res[0].content = 'Yooooooo77778888\n1234'
-          //   this.messages = [...res]
-          // }, 600)
-          // setTimeout(_ => {
-          //   res[0].content = 'Yooooooo77778888\n12345678'
-          //   this.messages = [...res]
-          //   console.log(this.messages)
-          // }, 800)
-        })
-
-        this.messagesLoaded = true
-      })
+    resizeHandler() {
+      this.vacHeight = window.innerHeight - 80
     },
-    sendMessage({ roomId, content, files, replyMessage, usersTag }) {
-      console.log('sendMessage', content)
-      const currentChat = this.chats.find(c => c.chatId === roomId)
-      const [messagePromise, messageSent] = currentChat.nextMessage({
-        senderId: 'me_id',
-        content: content
-      })
-      this.messages = [...this.messages, ...messageSent]
+    getNoneStreamingMessage(currentChat, messageContent) {
+      const messagesBefore = currentChat.getMessageHistory()
+      const message = messageContent !== undefined ? { content: messageContent, senderId: 'me_id' } : undefined
+      const [messagePromise, messageSent] = currentChat.nextMessage(message)
+      if (message) {
+        // 如果这里不使用messagesBefore而是直接使用this.messages，会导致切换room后加载到错误的消息
+        this.messages = [...messagesBefore, ...messageSent]
+      }
       messagePromise
         .then(res => {
           if (currentChat.chatId === this.currentRoomId) {
-            this.messages = [...this.messages, ...res]
+            this.messages = messageSent
+              ? [...messagesBefore, ...messageSent, ...res]
+              : [...messagesBefore, ...res]
           }
         })
         .catch(e => {
           showErrorMessage(e)
         })
+    },
+    getStreamingMessage(currentChat, messageContent) {
+      // this.typingUsers.push(currentChat.chatId)
+      const messagesBefore = currentChat.getMessageHistory()
+      const streamAnswer = (messages, messageSent, isLast) => {
+        if (currentChat.chatId === this.currentRoomId) {
+          this.messages = messageSent
+            ? [...messagesBefore, ...messageSent, ...messages]
+            : [...messagesBefore, ...messages]
+        }
+        // if (isLast) {
+        //   this.typingUsers = this.typingUsers.filter(u => u !== currentChat.chatId)
+        // }
+      }
+      const message = messageContent !== undefined ? { content: messageContent, senderId: 'me_id' } : undefined
+      const messageSent = currentChat.streamNextMessage(message, streamAnswer)
+      if (messageSent) {
+        this.messages = [...this.messages, ...messageSent]
+      }
+    },
+    getMessage(...args) {
+      if (storage.get('openaiSettings.stream')) {
+        this.getStreamingMessage(...args)
+      } else {
+        this.getNoneStreamingMessage(...args)
+      }
+    },
+    fetchMessages({ room, options }) {
+      this.currentRoomId = room.roomId
+      setTimeout(() => {
+        const currentChat = this.chats.find(c => c.chatId === this.currentRoomId)
+        const messageHistory = currentChat.getMessageHistory()
+        if (messageHistory.length === 0) {
+          this.getMessage(currentChat)
+        } else {
+          this.messages = messageHistory
+        }
+      })
+    },
+    sendMessage({ roomId, content, files, replyMessage, usersTag }) {
+      const currentChat = this.chats.find(c => c.chatId === roomId)
+      this.getMessage(currentChat, content)
     }
   }
 }

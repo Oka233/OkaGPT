@@ -10,11 +10,15 @@
 <script>
 import ChatContainer from '@/components/ChatContainer/index.vue'
 import GPTUtils from '@/utils/Chat/Chat'
+import storage from '@/utils/storage'
 
 export default {
   name: 'ChatManager',
   components: { ChatContainer },
-  prop: {
+  props: {
+    getSetting: {
+      type: Function
+    }
     // activeChat: {
     //   type: Object
     // }
@@ -38,14 +42,27 @@ export default {
     // if (!this.chats.length) {
     //   this.chats.push(GPTUtils.getChat())
     // }
+    if (storage.get('openaiSettings.autoStart')) {
+      this.addChat()
+    }
   },
   methods: {
     addChat() {
-      this.chats.push(GPTUtils.getChat())
+      if (!storage.get('openaiSettings.apiKey')) {
+        if (!storage.get('openaiSettings.autoStart')) {
+          this.$message({
+            message: 'Please set your OpenAI API key first',
+            type: 'warning'
+          })
+        }
+        return
+      }
+      this.chats.push(GPTUtils.getChat({
+        getSetting: this.getSetting
+      }))
     },
-    startChat() {
+    allowChat() {
       this.disabled = false
-      this.chats.push(GPTUtils.getChat())
     },
     freezeChat() {
       this.disabled = true

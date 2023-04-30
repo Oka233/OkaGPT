@@ -8,7 +8,7 @@ export function showErrorMessage(e) {
       type: 'error'
     })
   } else {
-    console.log(e)
+    console.log(typeof e)
     Message({
       message: e.message,
       type: 'error'
