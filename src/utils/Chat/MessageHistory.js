@@ -60,6 +60,16 @@ export class Message {
 export class MessageHistory {
   constructor(messages) {
     this.messages = messages.map(m => new Message(m))
+    this.usage = {
+      prompt_tokens: 0,
+      completion_tokens: 0,
+      total_tokens: 0
+    }
+  }
+  streamUsage(usage) {
+    this.usage.prompt_tokens += usage.prompt_tokens
+    this.usage.completion_tokens += usage.completion_tokens
+    this.usage.total_tokens += usage.total_tokens
   }
   push(message) {
     if (message instanceof Array) {

@@ -66,39 +66,23 @@ import storage from '@/utils/storage.js'
 import { OpenAI } from '@/utils/Models/OpenAI'
 import { showErrorMessage } from '@/utils/Models/openaiErrorMessage'
 import ModelOption from '@/components/ChatSettings/ModelOption.vue'
+import { mapGetters } from 'vuex'
 export default {
   name: 'ChatSettings',
   components: { ModelOption },
+  computed: {
+    ...mapGetters([
+      'openaiSettings',
+      'advancedTabCheckboxes'
+    ])
+  },
   data() {
     return {
       activeName: 'first',
       dummyApiKey: null,
       // 用来触发watch
       apiKey: null,
-      modelOptions: null,
-      advancedTabCheckboxes: {
-        temperature: false,
-        top_p: false,
-        n: false,
-        presence_penalty: false,
-        frequency_penalty: false,
-        logit_bias: false,
-        max_tokens: false
-      },
-      openaiSettings: {
-        apiKey: null,
-        model: null,
-        autoStart: null,
-        stream: null,
-        temperature: null,
-        top_p: null,
-        n: null,
-        stop: null,
-        presence_penalty: null,
-        frequency_penalty: null,
-        logit_bias: null,
-        max_tokens: null
-      }
+      modelOptions: null
     }
   },
   watch: {
@@ -108,21 +92,17 @@ export default {
           this.initModelSelection()
         }
       }
-    },
-    // openaiSettings: {
-    //   handler: function(val) {
-    //     console.log(val)
-    //   },
-    //   deep: true
-    // }
+    }
   },
   created() {
     console.log('____________initializing settings____________')
-    this.openaiSettings = this.setDefault(OpenAI.getDefaultSettings().detail)
+    this.$store.commit('chatSettings/SET_OPENAI_SETTINGS', this.setDefault(OpenAI.getDefaultSettings().detail))
+    // this.openaiSettings = this.setDefault(OpenAI.getDefaultSettings().detail)
     this.dummyApiKey = this.openaiSettings.apiKey
     this.apiKey = this.openaiSettings.apiKey
     // console.log(storage.get('advancedTabCheckboxes'))
     Object.assign(this.advancedTabCheckboxes, storage.get('advancedTabCheckboxes'))
+    // this.$store.commit('chatSettings/SET_ADVANCED_CHECKBOXES', advancedTabCheckboxes)
     console.log('____________initialization complete____________')
   },
   methods: {
@@ -157,7 +137,7 @@ export default {
       const filter = (m) => {
         return m.id.includes('gpt')
       }
-      new OpenAI({ getSetting: this.getSetting }).listEngines()
+      new OpenAI({}).listEngines()
         .then(res => {
           console.log(res)
           this.modelOptions = res.data.data.filter(filter).map((item) => {
@@ -176,12 +156,13 @@ export default {
             message: 'api key verified',
             type: 'success'
           })
+          this.$store.commit('chat/ENABLE_CHAT')
           this.$emit('ready')
         })
         .catch(e => {
           // this.modelOptions = []
           // this.openaiSettings.model = ''
-          this.$emit('freeze')
+          this.$store.commit('chat/DISABLE_CHAT')
           showErrorMessage(e)
         })
     },

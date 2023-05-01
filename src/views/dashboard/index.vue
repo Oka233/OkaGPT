@@ -1,30 +1,29 @@
 <template>
   <div class="dashboard-container">
 <!--    <div class="dashboard-text">name: {{ name }}</div>-->
-    <ChatManager
-      ref="chatManager"
+    <ChatContainer
       class="chat-left"
-      :get-setting="getSetting"
+      @add-chat="addChat"
     />
     <div class="chat-right">
-      <el-button @click="$refs.chatManager.addChat()">Add New Chat</el-button>
-      <ChatSettings
-        ref="chatSettings"
-        @ready="startChat"
-        @freeze="freezeChat"
-      />
+      <el-button type="primary" @click="addChat">Add New Chat</el-button>
+      <ChatSettings/>
+      <ChatStatus/>
     </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import ChatManager from '@/components/ChatManager/index.vue'
 import ChatSettings from '@/components/ChatSettings/index.vue'
+import ChatStatus from '@/components/ChatStatus/index.vue'
+import storage from '@/utils/storage'
+import GPTUtils from '@/utils/Chat/Chat'
+import ChatContainer from '@/components/ChatContainer/index.vue'
 
 export default {
   name: 'Dashboard',
-  components: { ChatSettings, ChatManager },
+  components: { ChatContainer, ChatStatus, ChatSettings },
   computed: {
     ...mapGetters([
       'name'
@@ -37,15 +36,18 @@ export default {
   mounted() {
   },
   methods: {
-    startChat() {
-      // 没有保证在chatManager mounted之后调用，出错了再检查这里
-      this.$refs.chatManager.allowChat()
-    },
-    freezeChat() {
-      this.$refs.chatManager.freezeChat()
-    },
-    getSetting(key) {
-      return this.$refs.chatSettings.getSetting(key)
+    addChat() {
+      if (!storage.get('openaiSettings.apiKey')) {
+        if (!storage.get('openaiSettings.autoStart')) {
+          this.$message({
+            message: 'Please set your OpenAI API key first',
+            type: 'warning'
+          })
+        }
+        return
+      }
+      this.$store.commit('chat/ADD_CHAT', GPTUtils.getChat({
+      }))
     }
   }
 }

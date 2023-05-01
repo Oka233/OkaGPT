@@ -1,5 +1,6 @@
 <template>
   <vue-advanced-chat
+    :class="{disabled: chatDisabled}"
     :height="`${vacHeight}px`"
     :show-audio="'false'"
     :show-new-messages-divider="'false'"
@@ -25,19 +26,22 @@
 import { register } from 'vue-advanced-chat'
 import { showErrorMessage } from '@/utils/Models/openaiErrorMessage'
 import storage from '@/utils/storage'
+import { mapGetters } from 'vuex'
 register()
 
 export default {
   name: 'ChatContainer',
   props: {
-    chats: {
-      required: false
-    },
-    // messages: {
-    //   required: false
-    // }
+    addChat: {
+      type: Function
+    }
   },
   computed: {
+    ...mapGetters([
+      'chats',
+      'chatDisabled',
+      'currentRoomId'
+    ]),
     rooms() {
       const rooms = this.chats.map((c, index) => {
         return {
@@ -68,7 +72,6 @@ export default {
       roomsLoaded: true,
       messagesLoaded: true,
       currentUserId: 'me_id',
-      currentRoomId: null,
       messages: [],
       roomActions: [
         { name: 'remove', title: '删除对话' },
@@ -80,6 +83,9 @@ export default {
   created() {
   },
   mounted() {
+    if (storage.get('openaiSettings.autoStart')) {
+      this.$emit('add-chat')
+    }
     this.resizeHandler()
     window.onresize = () => {
       return (() => {
@@ -140,7 +146,7 @@ export default {
       }
     },
     fetchMessages({ room, options }) {
-      this.currentRoomId = room.roomId
+      this.$store.commit('chatSettings/SET_ROOM_ID', room.roomId)
       setTimeout(() => {
         const currentChat = this.chats.find(c => c.chatId === this.currentRoomId)
         const messageHistory = currentChat.getMessageHistory()
@@ -160,5 +166,8 @@ export default {
 </script>
 
 <style scoped>
-
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
 </style>

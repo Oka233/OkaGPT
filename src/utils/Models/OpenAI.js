@@ -1,9 +1,9 @@
 import { Configuration, OpenAIApi } from 'openai'
 import { Message } from 'element-ui'
+import store from '@/store'
 
 export class OpenAI {
   constructor(options) {
-    this.getSetting = options.getSetting
     this.apiKey = this.getSetting('apiKey')
     if (this.apiKey) {
       this.init()
@@ -36,6 +36,17 @@ export class OpenAI {
       }
     })()
   }
+  getSetting(key) {
+    if (key in store.getters.advancedTabCheckboxes) {
+      if (store.getters.advancedTabCheckboxes[key]) {
+        return store.getters.openaiSettings[key]
+      } else {
+        return undefined
+      }
+    } else {
+      return store.getters.openaiSettings[key]
+    }
+  }
   init() {
     const configuration = new Configuration({
       organization: '',
@@ -61,7 +72,7 @@ export class OpenAI {
       }
     )
   }
-  async streamChat(messages, callback) {
+  async streamChat(messages, callback1, callback2) {
     const splitRes = (str) => {
       // console.log(str)
       let count = str.split(',"finish_reason":').length - 1
@@ -110,6 +121,7 @@ export class OpenAI {
       }
     )
 
+    // console.log('response', response)
     const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader()
 
     while (1) {
@@ -133,15 +145,26 @@ export class OpenAI {
       const jsons = splitRes(str).map(j => JSON.parse(j))
       // console.log(jsons)
       const ans = new Array(body.n || 1).fill('')
+      const finishReasons = new Array(body.n || 1)
+      const usage = {
+        prompt_tokens: 0,
+        completion_tokens: 0,
+        total_tokens: 0
+      }
       jsons.forEach(json => {
         const index = json.choices[0]?.index
         if (index !== undefined) {
           ans[index] += json.choices[0].delta?.content || ''
+          finishReasons[index] = json.choices[0].finish_reason
         }
+        // usage.prompt_tokens += json.usage.prompt_tokens
+        // usage.completion_tokens += json.usage.completion_tokens
+        // usage.total_tokens += json.usage.total_tokens
       })
-      callback(ans)
+      callback1(ans)
+      callback2(usage, finishReasons)
       // const json = JSON.parse(jsonStr)
-      // console.log(json)
+      // console.log(jsons)
     }
   }
 }

@@ -12,6 +12,7 @@ class Chat {
     roles[this.chatId] = 'assistant'
     this.messageHistory = new MessageHistory([])
     this.AI = new OpenAI(options)
+    this.finishStatus = []
     // this.AI.listEngines()
   }
   getMessageHistory() {
@@ -56,7 +57,7 @@ class Chat {
       messageSent
     ]
   }
-  streamNextMessage(message, callback) {
+  streamNextMessage(message, callback1) {
     let messageSent
     if (message) {
       this.messageHistory.push(message)
@@ -64,17 +65,28 @@ class Chat {
     }
     // 需要在push用户输入和push空消息之间生成给gpt的对话列表
     const messageHistory = this.messageHistory.toOpenAI()
-    this.messageHistory.push({
-      content: '',
-      senderId: this.chatId
-    })
+    let emptyMessagePushed = false
     const streamAnswer = (ans) => {
+      // 在第一次收到回复时，push一条空消息
+      if (!emptyMessagePushed) {
+        this.messageHistory.push({
+          content: '',
+          senderId: this.chatId
+        })
+        emptyMessagePushed = true
+      }
       const answerNum = this.messageHistory.streamMessage(ans)
-      callback(this.messageHistory.toVAC().slice(-answerNum), messageSent)
+      callback1(this.messageHistory.toVAC().slice(-answerNum), messageSent)
+    }
+    const streamUsage = (usage, finishReasons) => {
+      this.messageHistory.streamUsage(usage)
+      console.log(finishReasons)
+      this.finishStatus = finishReasons
     }
     this.AI.streamChat(
       messageHistory,
-      streamAnswer
+      streamAnswer,
+      streamUsage
     )
     return messageSent
   }
