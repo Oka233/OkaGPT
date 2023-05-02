@@ -6,7 +6,9 @@
       @add-chat="addChat"
     />
     <div class="chat-right">
-      <el-button type="primary" @click="addChat">Add New Chat</el-button>
+      <el-button type="primary" @click="addChat">Start New Chat</el-button>
+      <el-button type="primary" @click="saveChats">Save Chats</el-button>
+      <el-button type="primary" @click="removeChats">Remove Chats</el-button>
       <ChatSettings/>
       <ChatStatus/>
     </div>
@@ -26,7 +28,7 @@ export default {
   components: { ChatContainer, ChatStatus, ChatSettings },
   computed: {
     ...mapGetters([
-      'name'
+      'chats'
     ])
   },
   data() {
@@ -34,8 +36,41 @@ export default {
     }
   },
   mounted() {
+    this.loadSavedChats()
   },
   methods: {
+    saveChats(notify = true) {
+      const savedChats = this.chats.map(chat => {
+        return chat.toSave()
+      })
+      storage.set('savedChats', JSON.stringify(savedChats))
+      if (notify) {
+        this.$message({
+          message: 'Chats saved',
+          type: 'success'
+        })
+      }
+    },
+    removeChats() {
+      this.$store.commit('chat/REMOVE_CHATS')
+      this.saveChats(false)
+      this.$message({
+        message: 'Chats removed',
+        type: 'success'
+      })
+    },
+    loadSavedChats() {
+      this.$store.commit('chat/REMOVE_CHATS')
+      let savedChats = storage.get('savedChats')
+      if (savedChats) {
+        savedChats = JSON.parse(savedChats)
+        savedChats.forEach(chat => {
+          this.$store.commit('chat/ADD_CHAT', GPTUtils.getChat({
+            ...chat
+          }))
+        })
+      }
+    },
     addChat() {
       if (!storage.get('openaiSettings.apiKey')) {
         if (!storage.get('openaiSettings.autoStart')) {
@@ -73,5 +108,8 @@ export default {
   //  font-size: 30px;
   //  line-height: 46px;
   //}
+}
+.el-button {
+  margin-left: 0px;
 }
 </style>

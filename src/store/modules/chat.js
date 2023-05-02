@@ -20,6 +20,9 @@ const mutations = {
   // SET_ADVANCED_SETTINGS: (state, settings) => {
   //   state.advancedSettings = settings
   // },
+  REMOVE_CHATS: (state) => {
+    state.chats = []
+  },
   ADD_CHAT: (state, chat) => {
     state.chats.push(chat)
   },

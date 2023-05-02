@@ -3,17 +3,30 @@ import { users, roles } from '@/utils/Chat/users'
 
 export class Message {
   constructor(options) {
-    this.content = options.content
-    this.date = options.date || dateUtils.getDate()
-    this.timestamp = options.timestamp || dateUtils.getTimestamp()
-    this.senderId = options.senderId
+    const textMessage = (m) => {
+      this.content = m.content
+      this.date = m.date || dateUtils.getDate()
+      this.timestamp = m.timestamp || dateUtils.getTimestamp()
+      this.senderId = m.senderId
+    }
+    if (options.type) {
+      switch (options.type) {
+        case 'text': {
+          textMessage(options.message)
+          break
+        }
+        case 'sub': {
+          this.createSubMessages(options.subMessages)
+        }
+      }
+    } else {
+      textMessage(options)
+    }
   }
-  createSubMessages(contentArr) {
-    this.subMessages = contentArr.map(content => {
-      return new Message({
-        content,
-        senderId: this.senderId
-      })
+  createSubMessages(messages) {
+    this.subMessages = messages.map(m => {
+      m.senderId = this.senderId
+      return new Message(m)
     })
   }
   getSubMessages() {
@@ -55,11 +68,33 @@ export class Message {
       }]
     }
   }
+  toSave() {
+    if (this.subMessages) {
+      return {
+        type: 'sub',
+        subMessages: this.subMessages.map(subMessage => {
+          return subMessage.toSave()
+        })
+      }
+    } else {
+      return {
+        type: 'text',
+        message: {
+          content: this.content,
+          senderId: this.senderId,
+          date: this.date,
+          timestamp: this.timestamp
+        }
+      }
+    }
+  }
 }
 
 export class MessageHistory {
-  constructor(messages) {
-    this.messages = messages.map(m => new Message(m))
+  constructor(options) {
+    // console.log('options', options)
+    options = options || { messages: [] }
+    this.messages = options.messages.map(m => new Message(m))
     this.usage = {
       prompt_tokens: 0,
       completion_tokens: 0,
@@ -86,7 +121,7 @@ export class MessageHistory {
           subMessage.content += contentArr[index]
         })
       } else {
-        targetMessage.createSubMessages(contentArr)
+        targetMessage.createSubMessages(contentArr.map(content => { return { content: content } }))
       }
       // if ('temp' in this.messages[this.messages.length - 1]) {
       //   contentArr.forEach((content, index) => {
@@ -123,5 +158,10 @@ export class MessageHistory {
       })
     })
     return mh
+  }
+  toSave() {
+    return {
+      messages: this.messages.map(m => m.toSave())
+    }
   }
 }

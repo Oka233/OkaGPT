@@ -5,12 +5,14 @@ import { OpenAI } from '@/utils/Models/OpenAI'
 
 class Chat {
   constructor(options) {
-    this.chatId = uuidv4()
+    console.log('chat options', options)
+    options = options || {}
+    this.chatId = options.chatId || uuidv4()
     // this.userName = `GPT No.${Object.keys(users).length}`
-    this.userName = 'GPT'
+    this.userName = options.userName || 'GPT'
     users[this.chatId] = this.userName
     roles[this.chatId] = 'assistant'
-    this.messageHistory = new MessageHistory([])
+    this.messageHistory = new MessageHistory(options.messageHistory)
     this.AI = new OpenAI(options)
     this.finishStatus = []
     // this.AI.listEngines()
@@ -75,12 +77,13 @@ class Chat {
         })
         emptyMessagePushed = true
       }
+      console.log(ans[0])
       const answerNum = this.messageHistory.streamMessage(ans)
       callback1(this.messageHistory.toVAC().slice(-answerNum), messageSent)
     }
     const streamUsage = (usage, finishReasons) => {
       this.messageHistory.streamUsage(usage)
-      console.log(finishReasons)
+      // console.log(finishReasons)
       this.finishStatus = finishReasons
     }
     this.AI.streamChat(
@@ -89,6 +92,13 @@ class Chat {
       streamUsage
     )
     return messageSent
+  }
+  toSave() {
+    return {
+      chatId: this.chatId,
+      userName: this.userName,
+      messageHistory: this.messageHistory.toSave()
+    }
   }
 }
 
