@@ -33,7 +33,7 @@
     </el-tab-pane>
     <el-tab-pane label="Advanced" name="second">
       <el-alert
-        title="These options are enabled only when stream is set to on"
+        title="These options are exclusive to stream mode"
         :closable="false"
         type="warning"
       >
@@ -153,7 +153,7 @@ export default {
             this.openaiSettings.model = ''
           }
           this.$message({
-            message: 'api key verified',
+            message: 'OpenAI API key verified',
             type: 'success'
           })
           this.$store.commit('chat/ENABLE_CHAT')

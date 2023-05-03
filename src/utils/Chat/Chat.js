@@ -5,7 +5,7 @@ import { OpenAI } from '@/utils/Models/OpenAI'
 
 class Chat {
   constructor(options) {
-    console.log('chat options', options)
+    // console.log('chat options', options)
     options = options || {}
     this.chatId = options.chatId || uuidv4()
     // this.userName = `GPT No.${Object.keys(users).length}`

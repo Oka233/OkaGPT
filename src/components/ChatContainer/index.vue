@@ -9,7 +9,6 @@
     :show-reaction-emojis="'false'"
     :emojis-suggestion-enabled="'false'"
     :loading-rooms="loadingRooms.toString()"
-    :loading-messages="loadingMessages.toString()"
     :rooms-loaded="roomsLoaded.toString()"
     :messages-loaded="messagesLoaded.toString()"
     :current-user-id="currentUserId"
@@ -68,7 +67,6 @@ export default {
     return {
       vacHeight: null,
       loadingRooms: false,
-      loadingMessages: false,
       roomsLoaded: true,
       messagesLoaded: true,
       currentUserId: 'me_id',
@@ -146,6 +144,7 @@ export default {
       }
     },
     fetchMessages({ room, options }) {
+      // this.messagesLoaded = false
       this.$store.commit('chatSettings/SET_ROOM_ID', room.roomId)
       setTimeout(() => {
         const currentChat = this.chats.find(c => c.chatId === this.currentRoomId)
@@ -155,6 +154,7 @@ export default {
         } else {
           this.messages = messageHistory
         }
+        // this.messagesLoaded = true
       })
     },
     sendMessage({ roomId, content, files, replyMessage, usersTag }) {
