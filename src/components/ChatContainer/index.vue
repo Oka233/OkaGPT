@@ -1,5 +1,5 @@
 <template>
-  <vue-advanced-chat
+  <vue-advanced-chat-md
     :class="{disabled: chatDisabled}"
     :height="`${vacHeight}px`"
     :show-audio="'false'"
@@ -18,11 +18,11 @@
     @send-message="sendMessage($event.detail[0])"
     @fetch-messages="fetchMessages($event.detail[0])"
   >
-  </vue-advanced-chat>
+  </vue-advanced-chat-md>
 </template>
 
 <script>
-import { register } from 'vue-advanced-chat'
+import { register } from 'vue-advanced-chat-md'
 import { showErrorMessage } from '@/utils/Models/openaiErrorMessage'
 import storage from '@/utils/storage'
 import { mapGetters } from 'vuex'

@@ -13,6 +13,7 @@ export class OpenAI {
         type: 'warning'
       })
     }
+    this.sysMessage = 'If any code block exists in your message, add corresponding language type for it. Start a conversation with your greeting.'
   }
   static getDefaultSettings() {
     return (() => {
@@ -65,7 +66,7 @@ export class OpenAI {
       {
         model: this.getSetting('model'),
         messages: [
-          { 'role': 'system', 'content': 'Start a conversation with your greeting.' },
+          { 'role': 'system', 'content': this.sysMessage },
           ...messages
         ],
         temperature: 0
@@ -97,7 +98,7 @@ export class OpenAI {
     const body = {
       model: this.getSetting('model'),
       messages: [
-        { 'role': 'system', 'content': 'Start a conversation with your greeting.' },
+        { 'role': 'system', 'content': this.sysMessage },
         ...messages
       ],
       stream: true
