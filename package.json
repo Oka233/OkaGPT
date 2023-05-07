@@ -1,8 +1,8 @@
 {
-  "name": "vue-admin-template",
-  "version": "4.4.0",
-  "description": "A vue admin template with Element UI & axios & iconfont & permission control & lint",
-  "author": "Pan <panfree23@gmail.com>",
+  "name": "OkaGPT",
+  "version": "1.0.0",
+  "description": "A web-ui for openai api based on vue & element-ui",
+  "author": "Oka233",
   "scripts": {
     "dev": "vue-cli-service serve",
     "build:prod": "vue-cli-service build",
@@ -25,7 +25,7 @@
     "path-to-regexp": "2.4.0",
     "uuidv4": "^6.2.13",
     "vue": "2.6.10",
-    "vue-advanced-chat-md": "^2.0.7-alpha.1",
+    "vue-advanced-chat-md": "file:../vue-advanced-chat",
     "vue-router": "3.0.6",
     "vuex": "3.1.0"
   },

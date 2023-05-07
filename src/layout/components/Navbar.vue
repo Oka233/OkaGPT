@@ -1,5 +1,10 @@
 <template>
   <div class="navbar">
+    <div class="okg-title">
+      <span>
+        OkaGPT
+      </span>
+    </div>
 <!--    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />-->
 
 <!--    <breadcrumb class="breadcrumb-container" />-->
@@ -66,7 +71,15 @@ export default {
   position: relative;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
-
+  .okg-title {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    span {
+      line-height: 50px;
+      font-size: 24px;
+    }
+  }
   .hamburger-container {
     line-height: 46px;
     height: 100%;
