@@ -2,8 +2,8 @@
   <el-tabs v-model="activeName" type="border-card">
     <el-tab-pane label="Connection" name="first">
       <div class="first-tab-container">
-        <el-input v-model="dummyApiKey" @change="saveKey" placeholder="API Key" class="apikey-input"></el-input>
-        <el-select v-model="openaiSettings.model" placeholder="选择模型" @change="saveModel">
+        <el-input v-model="dummyApiKey" @change="saveKey" placeholder="Enter API Key" class="apikey-input"></el-input>
+        <el-select v-model="openaiSettings.model" placeholder="Choose Model" @change="saveModel">
           <el-option
             v-for="item in modelOptions"
             :key="item.value"

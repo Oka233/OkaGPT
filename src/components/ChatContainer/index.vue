@@ -1,6 +1,8 @@
 <template>
   <vue-advanced-chat-md
     :class="{disabled: chatDisabled}"
+    :show-add-room="'false'"
+    :show-search="'false'"
     :height="`${vacHeight}px`"
     :show-audio="'false'"
     :show-new-messages-divider="'false'"
@@ -17,6 +19,7 @@
     :room-actions="JSON.stringify(roomActions)"
     @send-message="sendMessage($event.detail[0])"
     @fetch-messages="fetchMessages($event.detail[0])"
+    @room-action-handler="roomActionHandler($event.detail[0])"
   >
   </vue-advanced-chat-md>
 </template>
@@ -45,7 +48,7 @@ export default {
       const rooms = this.chats.map((c, index) => {
         return {
           roomId: `${c.chatId}`,
-          roomName: `Chat ${index}`,
+          roomName: `Chat ${index + 1}`,
           index: index,
           users: [
             {
@@ -72,8 +75,8 @@ export default {
       currentUserId: 'me_id',
       messages: [],
       roomActions: [
-        { name: 'remove', title: '删除对话' },
-        { name: 'export', title: '导出对话' }
+        { name: 'export', title: 'Export Chat' },
+        { name: 'remove', title: 'Remove Chat' }
       ],
       typingUsers: []
     }
@@ -81,9 +84,6 @@ export default {
   created() {
   },
   mounted() {
-    if (storage.get('openaiSettings.autoStart')) {
-      this.$emit('add-chat')
-    }
     this.resizeHandler()
     window.onresize = () => {
       return (() => {
@@ -120,6 +120,9 @@ export default {
     getStreamingMessage(currentChat, messageContent) {
       // this.typingUsers.push(currentChat.chatId)
       const messagesBefore = currentChat.getMessageHistory()
+      if (messagesBefore.length === 0) {
+        this.messages = currentChat.getBlankMessage()
+      }
       const streamAnswer = (messages, messageSent, isLast) => {
         if (currentChat.chatId === this.currentRoomId) {
           this.messages = messageSent
@@ -146,16 +149,35 @@ export default {
     fetchMessages({ room, options }) {
       // this.messagesLoaded = false
       this.$store.commit('chatSettings/SET_ROOM_ID', room.roomId)
-      setTimeout(() => {
-        const currentChat = this.chats.find(c => c.chatId === this.currentRoomId)
-        const messageHistory = currentChat.getMessageHistory()
-        if (messageHistory.length === 0) {
-          this.getMessage(currentChat)
-        } else {
-          this.messages = messageHistory
-        }
-        // this.messagesLoaded = true
-      })
+      // setTimeout(() => {
+      const currentChat = this.chats.find(c => c.chatId === this.currentRoomId)
+      const messageHistory = currentChat.getMessageHistory()
+      if (messageHistory.length === 0) {
+        this.getMessage(currentChat)
+      } else {
+        this.messages = messageHistory
+      }
+      // this.messagesLoaded = true
+      // })
+    },
+    roomActionHandler({ roomId, action }) {
+      switch (action.name) {
+        case 'remove':
+          this.$store.commit('chat/REMOVE_CHAT', roomId)
+          this.$emit('save')
+          break
+        case 'export':
+          this.$message({
+            message: 'Exporting is a TODO feature',
+            type: 'warning'
+          })
+          break
+        default:
+          this.$message({
+            message: 'Unregistered action',
+            type: 'warning'
+          })
+      }
     },
     sendMessage({ roomId, content, files, replyMessage, usersTag }) {
       const currentChat = this.chats.find(c => c.chatId === roomId)

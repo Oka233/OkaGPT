@@ -3,7 +3,7 @@
 <!--    <div class="dashboard-text">name: {{ name }}</div>-->
     <ChatContainer
       class="chat-left"
-      @add-chat="addChat"
+      @save="saveChats(false)"
     />
     <div class="chat-right">
       <el-button type="primary" @click="addChat">Start New Chat</el-button>
@@ -37,6 +37,9 @@ export default {
   },
   mounted() {
     this.loadSavedChats()
+    if (storage.get('openaiSettings.autoStart')) {
+      this.addChat()
+    }
   },
   methods: {
     saveChats(notify = true) {
@@ -52,7 +55,7 @@ export default {
       }
     },
     removeChats() {
-      this.$store.commit('chat/REMOVE_CHATS')
+      this.$store.commit('chat/REMOVE_ALL_CHATS')
       this.saveChats(false)
       this.$message({
         message: 'Chats removed',
@@ -60,7 +63,7 @@ export default {
       })
     },
     loadSavedChats() {
-      this.$store.commit('chat/REMOVE_CHATS')
+      this.$store.commit('chat/REMOVE_ALL_CHATS')
       let savedChats = storage.get('savedChats')
       if (savedChats) {
         savedChats = JSON.parse(savedChats)

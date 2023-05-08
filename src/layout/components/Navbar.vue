@@ -5,6 +5,10 @@
         OkaGPT
       </span>
     </div>
+    <div class="github-link" >
+      <el-link type="primary" href="https://github.com/Oka233/OkaGPT" target="_blank">GitHub</el-link>
+    </div>
+
 <!--    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />-->
 
 <!--    <breadcrumb class="breadcrumb-container" />-->
@@ -79,6 +83,13 @@ export default {
       line-height: 50px;
       font-size: 24px;
     }
+  }
+  .github-link {
+    position: absolute;
+    right: 20px;
+    top: 0;
+    padding: 16px 0;
+    height: 100%;
   }
   .hamburger-container {
     line-height: 46px;

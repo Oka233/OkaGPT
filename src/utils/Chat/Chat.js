@@ -20,6 +20,14 @@ class Chat {
   getMessageHistory() {
     return this.messageHistory.toVAC()
   }
+  getBlankMessage() {
+    const mh = new MessageHistory()
+    mh.push({
+      senderId: this.chatId,
+      content: '...'
+    })
+    return mh.toVAC()
+  }
   nextMessage(message) {
     /**
      * 如果message为空且存在历史消息，则返回历史消息
@@ -77,7 +85,7 @@ class Chat {
         })
         emptyMessagePushed = true
       }
-      console.log(ans[0])
+      // console.log(ans[0])
       const answerNum = this.messageHistory.streamMessage(ans)
       callback1(this.messageHistory.toVAC().slice(-answerNum), messageSent)
     }

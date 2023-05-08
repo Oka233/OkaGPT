@@ -23,7 +23,7 @@ export class OpenAI {
         detail: {
           apiKey: '',
           model: '',
-          autoStart: true,
+          autoStart: false,
           stream: true,
           temperature: 1,
           top_p: 1,
@@ -121,6 +121,7 @@ export class OpenAI {
         body: JSON.stringify(body)
       }
     )
+    callback1(new Array(body.n || 1).fill(''))
 
     // console.log('response', response)
     const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader()
