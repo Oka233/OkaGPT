@@ -117,9 +117,10 @@ export default {
           showErrorMessage(e)
         })
     },
-    getStreamingMessage(currentChat, messageContent) {
+    getStreamingMessage(currentChat, messageContent, files) {
       // this.typingUsers.push(currentChat.chatId)
       const messagesBefore = currentChat.getMessageHistory()
+      // 切换到新的聊天时，先提供一个空消息，不然新聊天显示会延迟。这个空消息在streamAnswer中会被替换掉
       if (messagesBefore.length === 0) {
         this.messages = currentChat.getBlankMessage()
       }
@@ -133,7 +134,9 @@ export default {
         //   this.typingUsers = this.typingUsers.filter(u => u !== currentChat.chatId)
         // }
       }
-      const message = messageContent !== undefined ? { content: messageContent, senderId: 'me_id' } : undefined
+      console.log(files)
+      console.log(files.length)
+      const message = messageContent !== undefined ? { content: messageContent, files: files, senderId: 'me_id' } : undefined
       const messageSent = currentChat.streamNextMessage(message, streamAnswer)
       if (messageSent) {
         this.messages = [...this.messages, ...messageSent]
@@ -160,6 +163,10 @@ export default {
       // this.messagesLoaded = true
       // })
     },
+    sendMessage({ roomId, content, files, replyMessage, usersTag }) {
+      const currentChat = this.chats.find(c => c.chatId === roomId)
+      this.getMessage(currentChat, content, files)
+    },
     roomActionHandler({ roomId, action }) {
       switch (action.name) {
         case 'remove':
@@ -178,10 +185,6 @@ export default {
             type: 'warning'
           })
       }
-    },
-    sendMessage({ roomId, content, files, replyMessage, usersTag }) {
-      const currentChat = this.chats.find(c => c.chatId === roomId)
-      this.getMessage(currentChat, content)
     }
   }
 }
