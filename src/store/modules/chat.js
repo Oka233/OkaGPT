@@ -7,13 +7,14 @@ const state = {
   //
   // },
   chats: [],
-  chatDisabled: false
+  chatDisabled: false,
+  currentRoomId: null
 }
 
 const mutations = {
-  // SET_ROOM_ID: (state, roomId) => {
-  //   state.currentRoomId = roomId
-  // },
+  SET_ROOM_ID: (state, roomId) => {
+    state.currentRoomId = roomId
+  },
   // SET_OPENAI_SETTINGS: (state, settings) => {
   //   state.openaiSettings = settings
   // },

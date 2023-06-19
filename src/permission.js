@@ -3,19 +3,39 @@ import store from './store'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
 import 'nprogress/nprogress.css' // progress bar style
-import { getToken } from '@/utils/auth' // get token from cookie
-import getPageTitle from '@/utils/get-page-title'
+import storage from '@/utils/storage'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 router.beforeEach(async(to, from, next) => {
-  // start progress bar
-  NProgress.start()
-  store
-  next()
+  if (!store.getters.loadedSave) {
+    // 加载存储的数据，除了这里，不应再出现对sys和openai的storage.get
+    storage.load()
+  }
+  if (to.path === '/chat') {
+    if (store.getters.ready) {
+      next()
+    } else if (store.getters.platformType) {
+      // 根据存储的key进行验证
+      try {
+        const message = await store.getters.chatModel.verifyKey()
+        Message.success(message)
+        store.getters.chatModel.init()
+        store.commit('sys/ready', true)
+        next()
+      } catch (e) {
+        Message.error(`本地设置过期，请重新设置。${e.message}}`)
+        next({ path: '/start-wizard' })
+      }
+    } else {
+      // 未设置过key,跳转到设置页面
+      Message.warning('请先填写初始设置')
+      next({ path: '/start-wizard' })
+    }
+  } else {
+    next()
+  }
 })
 
 router.afterEach(() => {
-  // finish progress bar
-  NProgress.done()
 })

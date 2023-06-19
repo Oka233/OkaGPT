@@ -5,7 +5,8 @@ import app from './modules/app'
 import settings from './modules/settings'
 import user from './modules/user'
 import chat from './modules/chat'
-import chatSettings from './modules/chatSettings'
+import sys from './modules/sys'
+import openai from './modules/openai'
 
 Vue.use(Vuex)
 
@@ -15,7 +16,8 @@ const store = new Vuex.Store({
     settings,
     user,
     chat,
-    chatSettings
+    sys,
+    openai
   },
   getters
 })

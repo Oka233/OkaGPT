@@ -1,3 +1,6 @@
+import store from '@/store'
+import { Chat } from '@/utils/Chat/Chat'
+
 function set(path, val) {
   path = path.split('.')
   if (path.length === 1) {
@@ -34,7 +37,34 @@ function get(path) {
   return obj
 }
 
+function save() {
+  const sys = {}
+  for (const key in store.state.sys) {
+    if (key !== 'chatModel') {
+      sys[key] = store.state.sys[key]
+    }
+  }
+  set('sys', sys)
+  set('openai', store.state.openai)
+}
+
+function load() {
+  // 加载设置
+  store.commit('openai/load', get('openai'))
+  store.commit('sys/load', get('sys'))
+  // 加载保存的对话
+  const savedChats = get('savedChats')
+  if (savedChats) {
+    store.commit('chat/REMOVE_ALL_CHATS')
+    JSON.parse(savedChats).forEach(chat => {
+      store.commit('chat/ADD_CHAT', new Chat(chat))
+    })
+  }
+}
+
 export default {
   set,
-  get
+  get,
+  save,
+  load
 }

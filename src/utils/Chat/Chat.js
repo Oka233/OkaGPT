@@ -1,21 +1,21 @@
 import { v4 as uuidv4 } from 'uuid'
 import { MessageHistory } from '@/utils/Chat/MessageHistory'
 import { users, roles } from '@/utils/Chat/users'
-import { OpenAI } from '@/utils/Models/OpenAI'
+import store from '@/store'
 
-class Chat {
+export class Chat {
   constructor(options) {
     // console.log('chat options', options)
     options = options || {}
     this.chatId = options.chatId || uuidv4()
+    this.title = options.title || '新的对话'
     // this.userName = `GPT No.${Object.keys(users).length}`
     this.userName = options.userName || 'GPT'
     users[this.chatId] = this.userName
     roles[this.chatId] = 'assistant'
     this.messageHistory = new MessageHistory(options.messageHistory)
-    this.AI = new OpenAI(options)
-    this.finishStatus = []
-    // this.AI.listEngines()
+    this.chatModel = store.getters.chatModel
+    this.finishStatus = ['waiting']
   }
   getMessageHistory() {
     return this.messageHistory.toVAC()
@@ -50,7 +50,7 @@ class Chat {
     }
     return [
       new Promise((resolve, reject) => {
-        this.AI.chat(this.messageHistory)
+        this.chatModel.chat(this.messageHistory)
           .then(res => {
             console.log('result', res)
             const content = res.data.choices[0].message.content
@@ -68,6 +68,10 @@ class Chat {
     ]
   }
   streamNextMessage(message, callback1) {
+    if (this.messageHistory.len() === 0 && message) {
+      this.setTitle(message)
+    }
+    this.finishStatus = ['waiting']
     let messageSent
     if (message) {
       this.messageHistory.push(message)
@@ -78,6 +82,7 @@ class Chat {
     let emptyMessagePushed = false
     const streamAnswer = (ans) => {
       // 在第一次收到回复时，push一条空消息
+      // 保证同时接收多条回复时同时出现
       if (!emptyMessagePushed) {
         this.messageHistory.push({
           content: '',
@@ -94,26 +99,42 @@ class Chat {
       // console.log(finishReasons)
       this.finishStatus = finishReasons
     }
-    this.AI.streamChat(
+    this.chatModel.streamChat(
       messageHistory,
       streamAnswer,
       streamUsage
     )
+
     return messageSent
   }
   toSave() {
     return {
       chatId: this.chatId,
+      title: this.title,
       userName: this.userName,
       messageHistory: this.messageHistory.toSave()
     }
   }
-}
+  setTitle(message) {
+    const messageHistory = new MessageHistory()
+    messageHistory.push({
+      content: `given the following message, summarize the topic of the conversation. Your answer must be written in the same language as the given message with no descriptive words. Message: ${message.content}`,
+      senderId: 'me_id'
+    })
 
-function getChat(options) {
-  return new Chat(options)
-}
-
-export default {
-  getChat
+    let titleBegan = false
+    const streamAnswer = (ans) => {
+      if (!titleBegan) {
+        this.title = ans[0]
+        titleBegan = true
+      } else {
+        this.title += ans[0].replace('.', '').replace('。', '')
+      }
+      console.log(this.title)
+    }
+    this.chatModel.streamChat(
+      messageHistory.toOpenAI(),
+      streamAnswer
+    )
+  }
 }

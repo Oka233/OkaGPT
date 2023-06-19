@@ -164,4 +164,7 @@ export class MessageHistory {
       messages: this.messages.map(m => m.toSave())
     }
   }
+  len() {
+    return this.messages.length
+  }
 }

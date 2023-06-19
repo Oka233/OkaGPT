@@ -1,24 +1,40 @@
 <template>
   <vue-advanced-chat-md
+    :message-actions="[]"
+    :text-messages="JSON.stringify({
+      ROOMS_EMPTY: 'No rooms',
+      ROOM_EMPTY: 'No room selected',
+      NEW_MESSAGES: 'New Messages',
+      MESSAGE_DELETED: 'This message was deleted',
+      MESSAGES_EMPTY: 'No messages',
+      CONVERSATION_STARTED: '对话开始于: ',
+      TYPE_MESSAGE: '',
+      SEARCH: 'Search',
+      IS_ONLINE: 'is online',
+      LAST_SEEN: 'last seen ',
+      IS_TYPING: 'is writing...',
+      CANCEL_SELECT_MESSAGE: 'Cancel'
+    })"
     :class="{disabled: chatDisabled}"
-    :show-add-room="'false'"
-    :show-search="'false'"
+    show-add-room="false"
+    show-search="false"
+    show-files="false"
     :height="`${vacHeight}px`"
-    :show-audio="'false'"
-    :show-new-messages-divider="'false'"
+    show-audio="false"
+    show-new-messages-divider="false"
     :username-options="JSON.stringify({minUsers: 1, currentUser: true})"
-    :show-emojis="'false'"
-    :show-reaction-emojis="'false'"
-    :emojis-suggestion-enabled="'false'"
-    :loading-rooms="loadingRooms.toString()"
-    :rooms-loaded="roomsLoaded.toString()"
-    :messages-loaded="messagesLoaded.toString()"
+    show-emojis="false"
+    show-reaction-emojis="false"
+    emojis-suggestion-enabled="false"
+    loading-rooms="false"
+    rooms-loaded="true"
+    messages-loaded="true"
     :current-user-id="currentUserId"
     :rooms="JSON.stringify(rooms)"
     :messages="JSON.stringify(messages)"
     :room-actions="JSON.stringify(roomActions)"
     @send-message="sendMessage($event.detail[0])"
-    @fetch-messages="fetchMessages($event.detail[0])"
+    @fetch-messages="openChat($event.detail[0])"
     @room-action-handler="roomActionHandler($event.detail[0])"
   >
   </vue-advanced-chat-md>
@@ -26,8 +42,6 @@
 
 <script>
 import { register } from 'vue-advanced-chat-md'
-import { showErrorMessage } from '@/utils/Models/openaiErrorMessage'
-import storage from '@/utils/storage'
 import { mapGetters } from 'vuex'
 register()
 
@@ -42,13 +56,14 @@ export default {
     ...mapGetters([
       'chats',
       'chatDisabled',
-      'currentRoomId'
+      'currentRoomId',
+      'chatModel'
     ]),
     rooms() {
       const rooms = this.chats.map((c, index) => {
         return {
           roomId: `${c.chatId}`,
-          roomName: `Chat ${index + 1}`,
+          roomName: c.title,
           index: index,
           users: [
             {
@@ -64,19 +79,19 @@ export default {
       })
       rooms.typingUsers = this.typingUsers
       return rooms
+    },
+    currentChat() {
+      return this.chats.find(c => c.chatId === this.currentRoomId)
     }
   },
   data() {
     return {
       vacHeight: null,
-      loadingRooms: false,
-      roomsLoaded: true,
-      messagesLoaded: true,
       currentUserId: 'me_id',
       messages: [],
       roomActions: [
-        { name: 'export', title: 'Export Chat' },
-        { name: 'remove', title: 'Remove Chat' }
+        { name: 'export', title: '导出' },
+        { name: 'remove', title: '删除' }
       ],
       typingUsers: []
     }
@@ -114,14 +129,14 @@ export default {
           }
         })
         .catch(e => {
-          showErrorMessage(e)
+          this.$message.error(e.message)
         })
     },
     getStreamingMessage(currentChat, messageContent, files) {
       // this.typingUsers.push(currentChat.chatId)
       const messagesBefore = currentChat.getMessageHistory()
       // 切换到新的聊天时，先提供一个空消息，不然新聊天显示会延迟。这个空消息在streamAnswer中会被替换掉
-      if (messagesBefore.length === 0) {
+      if (messagesBefore.length === 0 && this.chatModel.getSetting('hello')) {
         this.messages = currentChat.getBlankMessage()
       }
       const streamAnswer = (messages, messageSent, isLast) => {
@@ -135,37 +150,32 @@ export default {
         // }
       }
       console.log(files)
-      console.log(files.length)
+      // console.log(files.length)
       const message = messageContent !== undefined ? { content: messageContent, files: files, senderId: 'me_id' } : undefined
       const messageSent = currentChat.streamNextMessage(message, streamAnswer)
       if (messageSent) {
         this.messages = [...this.messages, ...messageSent]
       }
     },
-    getMessage(...args) {
-      if (storage.get('openaiSettings.stream')) {
+    getMessageFromModel(...args) {
+      if (this.chatModel.getSetting('stream')) {
         this.getStreamingMessage(...args)
       } else {
         this.getNoneStreamingMessage(...args)
       }
     },
-    fetchMessages({ room, options }) {
-      // this.messagesLoaded = false
-      this.$store.commit('chatSettings/SET_ROOM_ID', room.roomId)
-      // setTimeout(() => {
-      const currentChat = this.chats.find(c => c.chatId === this.currentRoomId)
-      const messageHistory = currentChat.getMessageHistory()
-      if (messageHistory.length === 0) {
-        this.getMessage(currentChat)
+    openChat({ room, options }) {
+      this.$store.commit('chat/SET_ROOM_ID', room.roomId)
+      const messageHistory = this.currentChat.getMessageHistory()
+      if (messageHistory.length === 0 && this.chatModel.getSetting('hello')) {
+        // 问候语
+        this.getMessageFromModel(this.currentChat)
       } else {
         this.messages = messageHistory
       }
-      // this.messagesLoaded = true
-      // })
     },
     sendMessage({ roomId, content, files, replyMessage, usersTag }) {
-      const currentChat = this.chats.find(c => c.chatId === roomId)
-      this.getMessage(currentChat, content, files)
+      this.getMessageFromModel(this.currentChat, content, files)
     },
     roomActionHandler({ roomId, action }) {
       switch (action.name) {
@@ -174,16 +184,10 @@ export default {
           this.$emit('save')
           break
         case 'export':
-          this.$message({
-            message: 'Exporting is a TODO feature',
-            type: 'warning'
-          })
+          this.$message.warning('导出功能尚未实现')
           break
         default:
-          this.$message({
-            message: 'Unregistered action',
-            type: 'warning'
-          })
+          this.$message.warning('未注册的动作')
       }
     }
   }

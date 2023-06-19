@@ -1,60 +1,68 @@
 import { Configuration, OpenAIApi } from 'openai'
 import { Message } from 'element-ui'
+import storage from '@/utils/storage'
 import store from '@/store'
 
 export class OpenAI {
-  constructor(options) {
-    this.apiKey = this.getSetting('apiKey')
-    if (this.apiKey) {
-      this.init()
-    } else {
-      Message({
-        message: 'Please set your OpenAI API key first',
-        type: 'warning'
-      })
-    }
-    this.sysMessage = 'If any code block exists in your message, add corresponding language type for it. Start a conversation with your greeting.'
+  sysMessage = 'If any code block exists in your message, add corresponding language type for it. Start a conversation with your greeting.'
+  constructor() {
+    const configuration = new Configuration({
+      organization: '',
+      apiKey: OpenAI.getSetting('apiKey')
+    })
+    delete configuration.baseOptions.headers['User-Agent']
+    this.openai = new OpenAIApi(configuration)
   }
-  static getDefaultSettings() {
-    return (() => {
-      return {
-        name: 'openaiSettings',
-        // advancedOnes: ['temperature', 'top_p', 'n', 'presence_penalty', 'frequency_penalty', 'logit_bias', 'max_tokens'],
-        detail: {
-          apiKey: '',
-          model: '',
-          autoStart: false,
-          stream: true,
-          temperature: 1,
-          top_p: 1,
-          n: 1,
-          stop: null,
-          presence_penalty: 0,
-          frequency_penalty: 0,
-          logit_bias: null,
-          max_tokens: 2048
-        }
-      }
-    })()
+  static async verifyKey(key) {
+    key = key || this.getSetting('apiKey')
+    const configuration = new Configuration({
+      apiKey: key
+    })
+    // delete configuration.baseOptions.headers['User-Agent']
+    return new Promise((resolve, reject) => {
+      new OpenAIApi(configuration).listModels()
+        .then(res => {
+          storage.set('openai.apiKey', key)
+          const len = res.data.data.filter(item => item.id.indexOf('gpt') > -1).length
+          console.log(res.data.data.map(item => item.id))
+          resolve(`API key已验证。当前有${len}个GPT模型可用`)
+        })
+        .catch(e => {
+          reject(e.response.data.error)
+        })
+    })
   }
-  getSetting(key) {
-    if (key in store.getters.advancedTabCheckboxes) {
-      if (store.getters.advancedTabCheckboxes[key]) {
-        return store.getters.openaiSettings[key]
+  static loadSettings() {
+    this.runningSettings = store.getters.openaiSettings
+  }
+  static saveSettings() {
+    storage.set('openai', this.runningSettings)
+  }
+  static getModels() {
+    const configuration = new Configuration({
+      apiKey: OpenAI.getSetting('apiKey')
+    })
+    return new Promise((resolve, reject) => {
+      new OpenAIApi(configuration).listModels()
+        .then(res => {
+          const models = res.data.data.filter(item => item.id.indexOf('gpt') > -1).map(item => item.id)
+          resolve(models)
+        })
+        .catch(e => {
+          reject(e.response.data.error)
+        })
+    })
+  }
+  static getSetting(key) {
+    if (key in store.getters.openaiAdvancedTabCheckboxes) {
+      if (store.getters.openaiAdvancedTabCheckboxes[key]) {
+        return this.runningSettings[key]
       } else {
         return undefined
       }
     } else {
-      return store.getters.openaiSettings[key]
+      return this.runningSettings[key]
     }
-  }
-  init() {
-    const configuration = new Configuration({
-      organization: '',
-      apiKey: this.apiKey
-    })
-    delete configuration.baseOptions.headers['User-Agent']
-    this.openai = new OpenAIApi(configuration)
   }
   listEngines() {
     return this.openai.listEngines()
@@ -64,7 +72,7 @@ export class OpenAI {
     console.log('request', messages)
     return this.openai.createChatCompletion(
       {
-        model: this.getSetting('model'),
+        model: OpenAI.getSetting('model'),
         messages: [
           { 'role': 'system', 'content': this.sysMessage },
           ...messages
@@ -73,7 +81,7 @@ export class OpenAI {
       }
     )
   }
-  async streamChat(messages, callback1, callback2) {
+  async streamChat(messages, callback1 = () => {}, callback2 = () => {}) {
     const splitRes = (str) => {
       // console.log(str)
       let count = str.split(',"finish_reason":').length - 1
@@ -96,7 +104,7 @@ export class OpenAI {
     }
 
     const body = {
-      model: this.getSetting('model'),
+      model: OpenAI.getSetting('model'),
       messages: [
         { 'role': 'system', 'content': this.sysMessage },
         ...messages
@@ -105,7 +113,7 @@ export class OpenAI {
     }
     const addSetting = ['temperature', 'top_p', 'n', 'presence_penalty', 'frequency_penalty', 'max_tokens']
     addSetting.forEach(key => {
-      const value = this.getSetting(key)
+      const value = OpenAI.getSetting(key)
       if (value !== undefined) {
         body[key] = value
       }
@@ -115,7 +123,7 @@ export class OpenAI {
       {
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + this.apiKey
+          Authorization: 'Bearer ' + OpenAI.getSetting('apiKey')
         },
         method: 'POST',
         body: JSON.stringify(body)
@@ -168,5 +176,11 @@ export class OpenAI {
       // const json = JSON.parse(jsonStr)
       // console.log(jsons)
     }
+  }
+  async completion(prompt) {
+    return this.openai.createCompletion({
+      model: OpenAI.getSetting('model'),
+      prompt: prompt
+    })
   }
 }

@@ -1,9 +1,12 @@
 <template>
   <el-card class="box-card">
+    <div slot="header">
+      <span>传输状态</span>
+    </div>
 <!--    {{currentChat && currentChat.messageHistory.usage}}-->
 <!--    {{currentChat && currentChat.finishStatus}}-->
     <div v-if="currentChat" class="finish-reason-container">
-      <el-tag v-for="(item, index) in currentChat.finishStatus" :key="index" :type="mapFinishReason(item)[0]">{{mapFinishReason(item)[1]}}</el-tag>
+      <el-tag v-for="(item, index) in currentChat.finishStatus" :key="index" :type="mapFinishReason(item)[0]">{{ mapFinishReason(item)[1] }}</el-tag>
     </div>
 <!--    <el-progress v-for="(item, index) in progressList" :key="index" :percentage="item.percentage" :format="item.format"></el-progress>-->
   </el-card>
@@ -60,20 +63,24 @@ export default {
     mapFinishReason(f) {
       switch (f) {
         case 'stop': {
-          return ['success', 'Success']
+          return ['success', '已完成']
         }
         case 'length': {
-          return ['warning', 'Length']
+          return ['warning', '对话过长']
         }
         case 'content_filter': {
-          return ['warning', 'Content filter']
+          return ['warning', '触发内容检测']
         }
         case null: {
-          return ['', 'Transferring']
+          return ['', '传输中']
+        }
+        case 'waiting' : {
+          // empty
+          return ['info', '等待中']
         }
         default : {
           // empty
-          return ['', 'Transferring']
+          return ['', '传输中']
         }
       }
     }
