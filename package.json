@@ -16,7 +16,6 @@
   "dependencies": {
     "axios": "0.18.1",
     "core-js": "3.6.5",
-    "dayjs": "^1.11.7",
     "element-ui": "2.13.2",
     "js-cookie": "2.2.0",
     "normalize.css": "7.0.0",
@@ -25,7 +24,7 @@
     "path-to-regexp": "2.4.0",
     "uuidv4": "^6.2.13",
     "vue": "2.6.10",
-    "vue-advanced-chat-md": "file:../vue-advanced-chat",
+    "vue-advanced-chat-md": "file:../vue-advanced-chat-md",
     "vue-router": "3.0.6",
     "vuex": "3.1.0"
   },
