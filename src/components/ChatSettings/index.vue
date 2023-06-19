@@ -53,7 +53,7 @@
       <ModelOption v-model="openaiAdvancedTabCheckboxes.max_tokens" :name="`max_tokens: ${openaiSettings.max_tokens}`">
         <el-slider v-model="openaiSettings.max_tokens" :min="0" :max="4096" :step="1" class="slot-slider" show-input :show-input-controls="false" :show-tooltip="false" />
       </ModelOption>
-      <el-button @click="resetAdvancedSettings">Reset</el-button>
+      <el-button @click="resetAdvancedSettings">重置</el-button>
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -107,7 +107,6 @@ export default {
     }
   },
   created() {
-    console.log(this.openaiSettings.apiKey)
     this.dummyApiKey = this.openaiSettings.apiKey
     this.apiKey = this.openaiSettings.apiKey
   },
@@ -121,6 +120,9 @@ export default {
             value: modelName
           }
         })
+        if (!this.modelOptions.some(item => item.value === this.openaiSettings.model)) {
+          this.openaiSettings.model = this.modelOptions[0].value
+        }
       }).catch(e => {
         this.$message.error(e.message)
       })

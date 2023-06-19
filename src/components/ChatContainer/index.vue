@@ -2,14 +2,14 @@
   <vue-advanced-chat-md
     :message-actions="[]"
     :text-messages="JSON.stringify({
-      ROOMS_EMPTY: 'No rooms',
-      ROOM_EMPTY: 'No room selected',
+      ROOMS_EMPTY: '',
+      ROOM_EMPTY: '点击开始新的对话按钮以添加聊天',
       NEW_MESSAGES: 'New Messages',
       MESSAGE_DELETED: 'This message was deleted',
-      MESSAGES_EMPTY: 'No messages',
+      MESSAGES_EMPTY: '输入消息以开始新的对话',
       CONVERSATION_STARTED: '对话开始于: ',
       TYPE_MESSAGE: '',
-      SEARCH: 'Search',
+      SEARCH: '搜索',
       IS_ONLINE: 'is online',
       LAST_SEEN: 'last seen ',
       IS_TYPING: 'is writing...',
@@ -17,12 +17,10 @@
     })"
     :class="{disabled: chatDisabled}"
     show-add-room="false"
-    show-search="false"
     show-files="false"
     :height="`${vacHeight}px`"
     show-audio="false"
     show-new-messages-divider="false"
-    :username-options="JSON.stringify({minUsers: 1, currentUser: true})"
     show-emojis="false"
     show-reaction-emojis="false"
     emojis-suggestion-enabled="false"

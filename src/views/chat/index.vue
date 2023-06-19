@@ -76,6 +76,6 @@ export default {
   //}
 }
 .el-button {
-  margin-left: 0px;
+  margin-left: 0;
 }
 </style>
