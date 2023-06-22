@@ -67,7 +67,7 @@ export class Chat {
       messageSent
     ]
   }
-  streamNextMessage(message, callback1) {
+  streamNextMessage(message, callback1, onFinish) {
     if (this.messageHistory.len() === 0 && message) {
       this.setTitle(message)
     }
@@ -102,7 +102,8 @@ export class Chat {
     this.chatModel.streamChat(
       messageHistory,
       streamAnswer,
-      streamUsage
+      streamUsage,
+      onFinish
     )
 
     return messageSent
@@ -118,7 +119,7 @@ export class Chat {
   setTitle(message) {
     const messageHistory = new MessageHistory()
     messageHistory.push({
-      content: `given the following message, summarize the topic of the conversation. Your answer must be written in the same language as the given message with no descriptive words. Message: ${message.content}`,
+      content: `${message.content}`,
       senderId: 'me_id'
     })
 
@@ -134,7 +135,13 @@ export class Chat {
     }
     this.chatModel.streamChat(
       messageHistory.toOpenAI(),
-      streamAnswer
+      streamAnswer,
+      () => {},
+      () => {},
+      `Predict the topic of the conversation based on the given message.
+      Your response should be informative and concise.
+      Use a verb-object phrase or nones.
+      You must Use the same language as the message.`
     )
   }
 }

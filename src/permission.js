@@ -1,11 +1,7 @@
 import router from './router'
 import store from './store'
-import { Message } from 'element-ui'
-import NProgress from 'nprogress' // progress bar
-import 'nprogress/nprogress.css' // progress bar style
+import { Message, Loading } from 'element-ui'
 import storage from '@/utils/storage'
-
-NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 router.beforeEach(async(to, from, next) => {
   if (!store.getters.loadedSave) {
@@ -18,7 +14,13 @@ router.beforeEach(async(to, from, next) => {
     } else if (store.getters.platformType) {
       // 根据存储的key进行验证
       try {
+        const loadingInstance = Loading.service({
+          text: '正在验证API key...'
+        })
         const message = await store.getters.chatModel.verifyKey()
+        // setTimeout(() => {
+        loadingInstance.close()
+        // }, 100)
         Message.success(message)
         store.getters.chatModel.init()
         store.commit('sys/ready', true)

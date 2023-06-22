@@ -31,6 +31,7 @@
     :rooms="JSON.stringify(rooms)"
     :messages="JSON.stringify(messages)"
     :room-actions="JSON.stringify(roomActions)"
+    :send-disabled="String(!canSendMessage)"
     @send-message="sendMessage($event.detail[0])"
     @fetch-messages="openChat($event.detail[0])"
     @room-action-handler="roomActionHandler($event.detail[0])"
@@ -75,7 +76,6 @@ export default {
           ]
         }
       })
-      rooms.typingUsers = this.typingUsers
       return rooms
     },
     currentChat() {
@@ -91,10 +91,8 @@ export default {
         { name: 'export', title: '导出' },
         { name: 'remove', title: '删除' }
       ],
-      typingUsers: []
+      canSendMessage: true
     }
-  },
-  created() {
   },
   mounted() {
     this.resizeHandler()
@@ -147,16 +145,20 @@ export default {
         //   this.typingUsers = this.typingUsers.filter(u => u !== currentChat.chatId)
         // }
       }
+      const onFinish = () => {
+        this.canSendMessage = true
+      }
       console.log(files)
       // console.log(files.length)
       const message = messageContent !== undefined ? { content: messageContent, files: files, senderId: 'me_id' } : undefined
-      const messageSent = currentChat.streamNextMessage(message, streamAnswer)
+      const messageSent = currentChat.streamNextMessage(message, streamAnswer, onFinish)
       if (messageSent) {
         this.messages = [...this.messages, ...messageSent]
       }
     },
     getMessageFromModel(...args) {
       if (this.chatModel.getSetting('stream')) {
+        this.canSendMessage = false
         this.getStreamingMessage(...args)
       } else {
         this.getNoneStreamingMessage(...args)
