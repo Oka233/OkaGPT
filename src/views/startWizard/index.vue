@@ -1,17 +1,20 @@
 <template>
   <div class="wizard-container">
-    <el-card class="box-card">
+    <el-card style="width:300px;">
+      <div slot="header">
+        <span>开始</span>
+      </div>
       <el-form>
         <el-form-item label="平台:">
-          <el-select v-model="platformForm.platformType">
+          <el-select v-model="platformForm.platformType" style="width: 258px;">
             <el-option value="openai" label="OpenAI" />
           </el-select>
         </el-form-item>
         <el-form-item label="API Key:">
-          <el-input v-model="platformForm.apiKey" type="text" />
+          <el-input v-model="platformForm.apiKey" type="text" style="width: 258px;" />
         </el-form-item>
         <el-form-item>
-          <el-button :loading="apiKeyVerifying" @click="confirm">确定</el-button>
+          <el-button type="primary" :loading="apiKeyVerifying" @click="confirm">确定</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -23,6 +26,7 @@ import { IChatModel } from '@/utils/Models/IChatModel'
 import router from '@/router'
 import storage from '@/utils/storage'
 import store from '@/store'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'StartWizard',
@@ -35,6 +39,16 @@ export default {
         apiKey: 'sk-'
       }
     }
+  },
+  computed: {
+    ...mapGetters([
+      'platformType',
+      'openaiSettings'
+    ])
+  },
+  created() {
+    this.platformForm.platformType = this.platformType || this.platformForm.platformType
+    this.platformForm.apiKey = this.openaiSettings.apiKey || this.platformForm.apiKey
   },
   methods: {
     async confirm() {

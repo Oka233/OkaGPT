@@ -45,6 +45,7 @@ export default {
 .model-option-container {
   display: flex;
   flex-flow: column;
+  margin-bottom: 8px;
 }
 .model-option-container-inline {
   flex-flow: row;

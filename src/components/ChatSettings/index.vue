@@ -2,7 +2,7 @@
   <el-tabs v-model="activeName" type="border-card">
     <el-tab-pane label="基本设置" name="first">
       <div class="first-tab-container">
-        <el-input v-model="dummyApiKey" placeholder="输入API Key" class="apikey-input" />
+        <el-input v-model="dummyApiKey" placeholder="输入API Key" class="apikey-input" show-password />
         <el-select v-model="openaiSettings.model" placeholder="选择对话模型">
           <el-option
             v-for="item in modelOptions"
@@ -11,49 +11,49 @@
             :value="item.value"
           />
         </el-select>
-        <div class="switch-container">
-          <span>
-            流式传输
-          </span>
-          <el-switch
-            v-model="openaiSettings.stream"
-          />
-        </div>
-        <div class="switch-container">
-          <span>
-            问候语
-          </span>
-          <el-switch
-            v-model="openaiSettings.hello"
-          />
-        </div>
+<!--        <div class="switch-container">-->
+<!--          <span>-->
+<!--            流式传输-->
+<!--          </span>-->
+<!--          <el-switch-->
+<!--            v-model="openaiSettings.stream"-->
+<!--          />-->
+<!--        </div>-->
+<!--        <div class="switch-container">-->
+<!--          <span>-->
+<!--            问候语-->
+<!--          </span>-->
+<!--          <el-switch-->
+<!--            v-model="openaiSettings.hello"-->
+<!--          />-->
+<!--        </div>-->
       </div>
     </el-tab-pane>
     <el-tab-pane label="高级设置" name="second">
-      <el-alert
-        title="高级设置仅对流式传输生效"
-        :closable="false"
-        type="warning"
-      />
+<!--      <el-alert-->
+<!--        title="高级设置仅对流式传输生效"-->
+<!--        :closable="false"-->
+<!--        type="warning"-->
+<!--      />-->
       <ModelOption v-model="openaiAdvancedTabCheckboxes.temperature" :name="`temperature: ${openaiSettings.temperature}`">
-        <el-slider v-model="openaiSettings.temperature" :min="0" :max="2" :step="0.025" class="slot-slider" show-input :show-input-controls="false" :show-tooltip="false" />
+        <el-slider v-model="openaiSettings.temperature" :min="0" :max="2" :step="0.025" class="slot-slider" :show-input="showSliderInput" :show-input-controls="false" :show-tooltip="false" />
       </ModelOption>
       <ModelOption v-model="openaiAdvancedTabCheckboxes.top_p" :name="`top_p: ${openaiSettings.top_p}`">
-        <el-slider v-model="openaiSettings.top_p" :min="0" :max="1" :step="0.025" class="slot-slider" show-input :show-input-controls="false" :show-tooltip="false" />
+        <el-slider v-model="openaiSettings.top_p" :min="0" :max="1" :step="0.025" class="slot-slider" :show-input="showSliderInput" :show-input-controls="false" :show-tooltip="false" />
       </ModelOption>
       <ModelOption v-model="openaiAdvancedTabCheckboxes.n" :name="`n: ${openaiSettings.n}`">
-        <el-slider v-model="openaiSettings.n" :min="1" :max="5" :step="1" class="slot-slider" show-input :show-input-controls="false" :show-tooltip="false" />
+        <el-slider v-model="openaiSettings.n" :min="1" :max="5" :step="1" class="slot-slider" :show-input="showSliderInput" :show-input-controls="false" :show-tooltip="false" />
       </ModelOption>
       <ModelOption v-model="openaiAdvancedTabCheckboxes.presence_penalty" :name="`presence_penalty: ${openaiSettings.presence_penalty}`">
-        <el-slider v-model="openaiSettings.presence_penalty" :min="-2" :max="2" :step="0.025" class="slot-slider" show-input :show-input-controls="false" :show-tooltip="false" />
+        <el-slider v-model="openaiSettings.presence_penalty" :min="-2" :max="2" :step="0.025" class="slot-slider" :show-input="showSliderInput" :show-input-controls="false" :show-tooltip="false" />
       </ModelOption>
       <ModelOption v-model="openaiAdvancedTabCheckboxes.frequency_penalty" :name="`frequency_penalty: ${openaiSettings.frequency_penalty}`">
-        <el-slider v-model="openaiSettings.frequency_penalty" :min="-2" :max="2" :step="0.025" class="slot-slider" show-input :show-input-controls="false" :show-tooltip="false" />
+        <el-slider v-model="openaiSettings.frequency_penalty" :min="-2" :max="2" :step="0.025" class="slot-slider" :show-input="showSliderInput" :show-input-controls="false" :show-tooltip="false" />
       </ModelOption>
       <ModelOption v-model="openaiAdvancedTabCheckboxes.max_tokens" :name="`max_tokens: ${openaiSettings.max_tokens}`">
-        <el-slider v-model="openaiSettings.max_tokens" :min="0" :max="4096" :step="1" class="slot-slider" show-input :show-input-controls="false" :show-tooltip="false" />
+        <el-slider v-model="openaiSettings.max_tokens" :min="0" :max="32 * 1024" :step="512" class="slot-slider" :show-input="showSliderInput" :show-input-controls="false" :show-tooltip="false" />
       </ModelOption>
-      <el-button @click="resetAdvancedSettings">重置</el-button>
+      <el-button type="primary" @click="resetAdvancedSettings">重置</el-button>
     </el-tab-pane>
   </el-tabs>
 </template>
@@ -71,7 +71,8 @@ export default {
       dummyApiKey: '',
       // 用来触发watch
       apiKey: '',
-      modelOptions: []
+      modelOptions: [],
+      showSliderInput: false
     }
   },
   computed: {
@@ -141,6 +142,9 @@ export default {
   display: flex;
   gap: 8px;
   .switch-container {
+    span {
+      color: #fff;
+    }
     padding: 0 12px;
     display: flex;
     justify-content: space-between;

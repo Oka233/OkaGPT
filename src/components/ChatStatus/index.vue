@@ -1,15 +1,15 @@
 <template>
-  <el-card class="box-card">
-    <div slot="header">
-      <span>传输状态</span>
-    </div>
+<!--  <el-card>-->
+<!--    <div slot="header">-->
+<!--      <span>传输状态</span>-->
+<!--    </div>-->
 <!--    {{currentChat && currentChat.messageHistory.usage}}-->
 <!--    {{currentChat && currentChat.finishStatus}}-->
     <div v-if="currentChat" class="finish-reason-container">
       <el-tag v-for="(item, index) in currentChat.finishStatus" :key="index" :type="mapFinishReason(item)[0]">{{ mapFinishReason(item)[1] }}</el-tag>
     </div>
 <!--    <el-progress v-for="(item, index) in progressList" :key="index" :percentage="item.percentage" :format="item.format"></el-progress>-->
-  </el-card>
+<!--  </el-card>-->
 </template>
 
 <script>
@@ -92,5 +92,6 @@ export default {
 .finish-reason-container {
   display: flex;
   gap: 8px;
+  padding-bottom: 8px;
 }
 </style>

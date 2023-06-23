@@ -23,7 +23,7 @@ import { Chat } from '@/utils/Chat/Chat'
 import ChatContainer from '@/components/ChatContainer/index.vue'
 
 export default {
-  name: 'Dashboard',
+  name: 'Chat',
   components: { ChatContainer, ChatStatus, ChatSettings },
   data() {
     return {
@@ -33,6 +33,11 @@ export default {
     ...mapGetters([
       'chats'
     ])
+  },
+  mounted() {
+    if (!this.chats.length) {
+      this.addChat()
+    }
   },
   methods: {
     saveChats(notify = true) {
@@ -57,7 +62,7 @@ export default {
 <style lang="scss" scoped>
 .dashboard {
   &-container {
-    margin: 12px;
+    //margin: 12px;
     display: flex;
     gap: 8px;
     .chat-left {
@@ -67,7 +72,10 @@ export default {
       flex-basis: 300px;
       display: flex;
       flex-flow: column;
+      padding-right: 8px;
       gap: 8px;
+      height: calc(100vh - 50px);
+      overflow: auto;
     }
   }
   //&-text {

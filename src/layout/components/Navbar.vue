@@ -73,12 +73,13 @@ export default {
   height: 50px;
   overflow: hidden;
   position: relative;
-  background: #fff;
+  background: #000000;
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
   .okg-title {
     height: 100%;
     display: flex;
     justify-content: center;
+    color: #fff;
     span {
       line-height: 50px;
       font-size: 24px;
@@ -90,6 +91,7 @@ export default {
     top: 0;
     padding: 16px 0;
     height: 100%;
+
   }
   .hamburger-container {
     line-height: 46px;
