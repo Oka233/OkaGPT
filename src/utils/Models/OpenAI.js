@@ -16,7 +16,7 @@ export class OpenAI {
       organization: '',
       apiKey: OpenAI.getSetting('apiKey')
     })
-    delete configuration.baseOptions.headers['User-Agent']
+    // delete configuration.baseOptions.headers['User-Agent']
     this.openai = new OpenAIApi(configuration)
   }
   static async verifyKey(key) {
@@ -75,7 +75,7 @@ export class OpenAI {
   }
   async chat(messageHistory) {
     const messages = messageHistory.toOpenAI()
-    console.log('request', messages)
+    // console.log('request', messages)
     return this.openai.createChatCompletion(
       {
         model: OpenAI.getSetting('model'),
@@ -124,7 +124,7 @@ export class OpenAI {
         body[key] = value
       }
     })
-    console.log('request', body)
+    console.log('requestBody', body)
     const response = await fetch('https://api.openai.com/v1/chat/completions',
       {
         headers: {
@@ -135,16 +135,18 @@ export class OpenAI {
         body: JSON.stringify(body)
       }
     )
+    // 先返回空信息占位
     callback1(new Array(body.n || 1).fill(''))
 
     // console.log('response', response)
     const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader()
 
-    while (1) {
+    let done = false
+    while (!done) {
       const res = await reader.read()
       if (res?.done) {
-
-        break
+        onFinish()
+        done = true
       }
       if (!res?.value) {
         continue
@@ -152,45 +154,37 @@ export class OpenAI {
       const str = res.value.slice(res.value.indexOf('{'), res.value.lastIndexOf('}') + 1)
       if (response?.status !== 200) {
         const e = JSON.parse(str)
-        Message({
-          message: e.error.message,
-          type: 'error'
-        })
-        break
+        Message.error(e.error.message)
+        onFinish()
+        done = true
       }
 
-      const jsons = splitRes(str).map(j => JSON.parse(j))
-      // console.log(jsons)
-      const ans = new Array(body.n || 1).fill('')
-      const finishReasons = new Array(body.n || 1)
-      const usage = {
-        prompt_tokens: 0,
-        completion_tokens: 0,
-        total_tokens: 0
-      }
-      jsons.forEach(json => {
-        const index = json.choices[0]?.index
-        if (index !== undefined) {
-          ans[index] += json.choices[0].delta?.content || ''
-          finishReasons[index] = json.choices[0].finish_reason
+      try {
+        const jsons = splitRes(str).map(j => JSON.parse(j))
+        // console.log(jsons)
+        const ans = new Array(body.n || 1).fill('')
+        const finishReasons = new Array(body.n || 1)
+        const usage = {
+          prompt_tokens: 0,
+          completion_tokens: 0,
+          total_tokens: 0
         }
-        // usage.prompt_tokens += json.usage.prompt_tokens
-        // usage.completion_tokens += json.usage.completion_tokens
-        // usage.total_tokens += json.usage.total_tokens
-      })
-      callback1(ans)
-      callback2(usage, finishReasons)
-      if (finishReasons.some(item => ['stop', 'length', 'content_filter'].includes(item))) {
-        onFinish()
+        jsons.forEach(json => {
+          const index = json.choices[0]?.index
+          if (index !== undefined) {
+            ans[index] += json.choices[0].delta?.content || ''
+            finishReasons[index] = json.choices[0].finish_reason
+          }
+          // usage.prompt_tokens += json.usage.prompt_tokens
+          // usage.completion_tokens += json.usage.completion_tokens
+          // usage.total_tokens += json.usage.total_tokens
+        })
+        callback1(ans)
+        callback2(usage, finishReasons)
+      } catch (e) {
+        console.log('split failed', e)
+        console.log(str, splitRes(str))
       }
-      // const json = JSON.parse(jsonStr)
-      // console.log(jsons)
     }
-  }
-  async completion(prompt) {
-    return this.openai.createCompletion({
-      model: OpenAI.getSetting('model'),
-      prompt: prompt
-    })
   }
 }

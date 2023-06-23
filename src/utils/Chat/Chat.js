@@ -52,7 +52,7 @@ export class Chat {
       new Promise((resolve, reject) => {
         this.chatModel.chat(this.messageHistory)
           .then(res => {
-            console.log('result', res)
+            // console.log('result', res)
             const content = res.data.choices[0].message.content
             this.messageHistory.push({
               content,
@@ -70,6 +70,7 @@ export class Chat {
   streamNextMessage(message, callback1, onFinish) {
     if (this.messageHistory.len() === 0 && message) {
       this.setTitle(message)
+      // return
     }
     this.finishStatus = ['waiting']
     let messageSent
@@ -119,7 +120,11 @@ export class Chat {
   setTitle(message) {
     const messageHistory = new MessageHistory()
     messageHistory.push({
-      content: `${message.content}`,
+      content: `Complete the fourth pair of texts as shown in the examples. Hint: The completed result must describe the main topic of the text and must not be a question.
+      1. What might be the grammar of this code => The grammar of a given piece of code\n
+      2. ケーキを作る方法はありますか => ケーキのレシピを教えてください\n
+      3. 为什么天空是蓝色的 => 天空是蓝色的原因\n
+      4. ${message.content} =>`,
       senderId: 'me_id'
     })
 
@@ -131,17 +136,18 @@ export class Chat {
       } else {
         this.title += ans[0].replace('.', '').replace('。', '')
       }
-      console.log(this.title)
+      // console.log(this.title)
     }
     this.chatModel.streamChat(
       messageHistory.toOpenAI(),
       streamAnswer,
       () => {},
       () => {},
-      `Predict the topic of the conversation based on the given message.
-      Your response should be informative and concise.
-      Use a verb-object phrase or nones.
-      You must Use the same language as the message.`
+      // `Predict the topic of the conversation based on the given message.
+      // Your response should be informative and concise.
+      // Use a verb-object phrase or nones.
+      // You must Use the same language as the message.`
+      'Your response must be concise and short.'
     )
   }
 }
