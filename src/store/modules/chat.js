@@ -1,19 +1,11 @@
 const state = {
-  // currentRoomId: null,
-  // openaiSettings: {
-  //
-  // },
-  // advancedSettings: {
-  //
-  // },
   chats: [],
-  chatDisabled: false,
-  currentRoomId: null
+  currentChatId: null
 }
 
 const mutations = {
-  SET_ROOM_ID: (state, roomId) => {
-    state.currentRoomId = roomId
+  setCurrentChatId: (state, chatId) => {
+    state.currentChatId = chatId
   },
   // SET_OPENAI_SETTINGS: (state, settings) => {
   //   state.openaiSettings = settings
@@ -21,20 +13,14 @@ const mutations = {
   // SET_ADVANCED_SETTINGS: (state, settings) => {
   //   state.advancedSettings = settings
   // },
-  REMOVE_ALL_CHATS: (state) => {
+  removeAllChats: (state) => {
     state.chats = []
   },
-  REMOVE_CHAT: (state, chatId) => {
+  removeChatById: (state, chatId) => {
     state.chats = state.chats.filter(chat => chat.chatId !== chatId)
   },
-  ADD_CHAT: (state, chat) => {
+  addChat: (state, chat) => {
     state.chats.push(chat)
-  },
-  DISABLE_CHAT: (state) => {
-    state.chatDisabled = true
-  },
-  ENABLE_CHAT: (state) => {
-    state.chatDisabled = false
   }
 }
 

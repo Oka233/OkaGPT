@@ -63,9 +63,9 @@ function load() {
   // 加载保存的对话
   const savedChats = get('savedChats')
   if (savedChats) {
-    store.commit('chat/REMOVE_ALL_CHATS')
+    store.commit('chat/removeAllChats')
     JSON.parse(savedChats).forEach(chat => {
-      store.commit('chat/ADD_CHAT', new Chat(chat))
+      store.commit('chat/addChat', new Chat(chat))
     })
   }
 }

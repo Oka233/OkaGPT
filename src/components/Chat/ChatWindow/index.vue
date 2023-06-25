@@ -54,9 +54,10 @@ export default {
     ...mapGetters([
       'chats',
       'chatDisabled',
-      'currentRoomId',
+      'currentChatId',
       'chatModel',
-      'preview'
+      'preview',
+      'currentChat'
     ]),
     rooms() {
       return this.chats.map((c, index) => {
@@ -76,9 +77,6 @@ export default {
           ]
         }
       })
-    },
-    currentChat() {
-      return this.chats.find(c => c.chatId === this.currentRoomId)
     }
   },
   data() {
@@ -261,7 +259,7 @@ export default {
       }
       messagePromise
         .then(res => {
-          if (currentChat.chatId === this.currentRoomId) {
+          if (currentChat.chatId === this.currentChatId) {
             this.messages = messageSent
               ? [...messagesBefore, ...messageSent, ...res]
               : [...messagesBefore, ...res]
@@ -279,7 +277,7 @@ export default {
         this.messages = currentChat.getBlankMessage()
       }
       const streamAnswer = (messages, messageSent, isLast) => {
-        if (currentChat.chatId === this.currentRoomId) {
+        if (currentChat.chatId === this.currentChatId) {
           this.messages = messageSent
             ? [...messagesBefore, ...messageSent, ...messages]
             : [...messagesBefore, ...messages]
@@ -309,7 +307,7 @@ export default {
       }
     },
     openChat({ room, options }) {
-      this.$store.commit('chat/SET_ROOM_ID', room.roomId)
+      this.$store.commit('chat/setCurrentChatId', room.roomId)
       const messageHistory = this.currentChat.getMessageHistory()
       if (messageHistory.length === 0 && this.chatModel.getSetting('hello')) {
         // 问候语
@@ -324,8 +322,10 @@ export default {
     roomActionHandler({ roomId, action }) {
       switch (action.name) {
         case 'remove':
-          this.$store.commit('chat/REMOVE_CHAT', roomId)
-          this.$emit('save')
+          this.$store.commit('chat/removeChatById', roomId)
+          setTimeout(() => {
+            this.$emit('add-chat')
+          }, 0)
           break
         case 'export':
           this.$message.warning('导出功能尚未实现')

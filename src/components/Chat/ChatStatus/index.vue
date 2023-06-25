@@ -1,15 +1,21 @@
 <template>
-<!--  <el-card>-->
-<!--    <div slot="header">-->
-<!--      <span>传输状态</span>-->
-<!--    </div>-->
-<!--    {{currentChat && currentChat.messageHistory.usage}}-->
-<!--    {{currentChat && currentChat.finishStatus}}-->
-    <div v-if="currentChat" class="finish-reason-container">
-      <el-tag v-for="(item, index) in currentChat.finishStatus" :key="index" :type="mapFinishReason(item)[0]">{{ mapFinishReason(item)[1] }}</el-tag>
-    </div>
-<!--    <el-progress v-for="(item, index) in progressList" :key="index" :percentage="item.percentage" :format="item.format"></el-progress>-->
-<!--  </el-card>-->
+  <!--  <el-card>-->
+  <!--    <div slot="header">-->
+  <!--      <span>传输状态</span>-->
+  <!--    </div>-->
+  <!--    {{currentChat && currentChat.messageHistory.usage}}-->
+  <!--    {{currentChat && currentChat.finishStatus}}-->
+  <div v-if="showStatus" class="finish-reason-container">
+    <el-tag
+      v-for="(item, index) in statusTags"
+      :key="index"
+      :type="item[0]"
+    >
+      {{ item[1] }}
+    </el-tag>
+  </div>
+  <!--    <el-progress v-for="(item, index) in progressList" :key="index" :percentage="item.percentage" :format="item.format"></el-progress>-->
+  <!--  </el-card>-->
 </template>
 
 <script>
@@ -26,12 +32,37 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'chats',
-      'currentRoomId'
+      'currentChat'
     ]),
-    currentChat() {
-      return this.chats.find(c => c.chatId === this.currentRoomId)
+    showStatus() {
+      return this.currentChat !== null
     },
+    statusTags() {
+      return this.currentChat.finishStatus.map(r => {
+        switch (r) {
+          case 'stop': {
+            return ['success', '已完成']
+          }
+          case 'length': {
+            return ['warning', '对话过长']
+          }
+          case 'content_filter': {
+            return ['warning', '触发内容检测']
+          }
+          case null: {
+            return ['', '传输中']
+          }
+          case 'waiting' : {
+            // empty
+            return ['info', '等待中']
+          }
+          default : {
+            // empty
+            return ['', '传输中']
+          }
+        }
+      })
+    }
     // progressList() {
     //   return [
     //     {
@@ -54,36 +85,6 @@ export default {
     //     }
     //   ]
     // }
-  },
-  data() {
-    return {
-    }
-  },
-  methods: {
-    mapFinishReason(f) {
-      switch (f) {
-        case 'stop': {
-          return ['success', '已完成']
-        }
-        case 'length': {
-          return ['warning', '对话过长']
-        }
-        case 'content_filter': {
-          return ['warning', '触发内容检测']
-        }
-        case null: {
-          return ['', '传输中']
-        }
-        case 'waiting' : {
-          // empty
-          return ['info', '等待中']
-        }
-        default : {
-          // empty
-          return ['', '传输中']
-        }
-      }
-    }
   }
 }
 </script>

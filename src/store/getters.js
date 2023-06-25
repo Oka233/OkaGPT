@@ -14,7 +14,7 @@ const getters = {
   openaiAdvancedTabCheckboxes: state => state.openai.advancedTabCheckboxes,
 
   chats: state => state.chat.chats,
-  chatDisabled: state => state.chat.chatDisabled,
-  currentRoomId: state => state.chat.currentRoomId
+  currentChatId: state => state.chat.currentChatId,
+  currentChat: state => state.chat.chats.find(chat => chat.chatId === state.chat.currentChatId)
 }
 export default getters

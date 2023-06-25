@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     <ChatWindow
       class="chat-left"
-      @save="storage.saveChats()"
+      @add-chat="addChat"
     />
     <div class="chat-right">
       <el-button type="primary" @click="addChat">开始新的对话</el-button>
@@ -73,7 +73,7 @@ export default {
         return
       }
       if (this.removeButtonState === 'confirm') {
-        this.$store.commit('chat/REMOVE_ALL_CHATS')
+        this.$store.commit('chat/removeAllChats')
         setTimeout(() => {
           this.addChat()
         }, 1)
@@ -86,7 +86,7 @@ export default {
       }
     },
     addChat() {
-      this.$store.commit('chat/ADD_CHAT', new Chat())
+      this.$store.commit('chat/addChat', new Chat())
       storage.saveChats()
     }
   }
