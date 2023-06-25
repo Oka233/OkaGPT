@@ -45,6 +45,15 @@ $dangerBase: #c70000;
   border-color: #fff;
 }
 
+// message
+.el-message {
+  .el-message__content {
+    color: $lightFont;
+  }
+  background-color: #000;
+  border-radius: 0;
+}
+
 // el-tabs
 .el-tabs--border-card {
   border: 1px solid $themeBase;
