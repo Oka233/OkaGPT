@@ -78,7 +78,8 @@ export default {
   .okg-title {
     height: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: left;
+    padding-left: 20px;
     color: #fff;
     span {
       line-height: 50px;

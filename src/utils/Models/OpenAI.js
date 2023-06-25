@@ -1,6 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai'
 import { Message } from 'element-ui'
-import storage from '@/utils/storage'
+import storage from '@/utils/sys/storage'
 import store from '@/store'
 
 export class OpenAI {

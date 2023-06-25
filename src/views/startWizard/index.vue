@@ -24,7 +24,7 @@
 <script>
 import { IChatModel } from '@/utils/Models/IChatModel'
 import router from '@/router'
-import storage from '@/utils/storage'
+import storage from '@/utils/sys/storage'
 import store from '@/store'
 import { mapGetters } from 'vuex'
 

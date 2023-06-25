@@ -1,7 +1,7 @@
 import router from './router'
 import store from './store'
 import { Message, Loading } from 'element-ui'
-import storage from '@/utils/storage'
+import storage from '@/utils/sys/storage'
 
 router.beforeEach(async(to, from, next) => {
   if (!store.getters.loadedSave) {

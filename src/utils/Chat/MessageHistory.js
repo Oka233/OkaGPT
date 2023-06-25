@@ -1,4 +1,4 @@
-import dateUtils from '@/utils/dateUtils'
+import dateUtils from '@/utils/Chat/dateUtils'
 import { users, roles } from '@/utils/Chat/users'
 
 export class Message {

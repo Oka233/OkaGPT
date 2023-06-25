@@ -18,7 +18,7 @@
 import { mapGetters } from 'vuex'
 import ChatSettings from '@/components/ChatSettings/index.vue'
 import ChatStatus from '@/components/ChatStatus/index.vue'
-import storage from '@/utils/storage'
+import storage from '@/utils/sys/storage'
 import { Chat } from '@/utils/Chat/Chat'
 import ChatContainer from '@/components/ChatContainer/index.vue'
 

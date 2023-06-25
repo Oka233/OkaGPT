@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import storage from '@/utils/storage.js'
+import storage from '@/utils/sys/storage'
 import ModelOption from '@/components/ChatSettings/ModelOption.vue'
 import { mapGetters } from 'vuex'
 export default {
