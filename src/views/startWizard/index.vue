@@ -65,7 +65,7 @@ export default {
         store.getters.chatModel.loadSettings()
         store.getters.chatModel.init()
         // 存储设置
-        storage.save()
+        storage.saveSys()
 
         router.push({ path: `/chat` })
       } catch (e) {

@@ -37,7 +37,7 @@ function get(path) {
   return obj
 }
 
-function save() {
+function saveSys() {
   const sys = {}
   for (const key in store.state.sys) {
     if (key !== 'chatModel') {
@@ -46,6 +46,14 @@ function save() {
   }
   set('sys', sys)
   set('openai', store.state.openai)
+}
+
+function saveChats(notify = true) {
+  const savedChats = store.getters.chats.map(chat => {
+    return chat.toSave()
+  })
+  set('savedChats', JSON.stringify(savedChats))
+  // if (notify) this.$message.success('对话列表已保存')
 }
 
 function load() {
@@ -65,6 +73,7 @@ function load() {
 export default {
   set,
   get,
-  save,
+  saveSys,
+  saveChats,
   load
 }

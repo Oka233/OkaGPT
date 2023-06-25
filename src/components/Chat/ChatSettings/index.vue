@@ -101,7 +101,7 @@ export default {
             store.getters.chatModel.loadSettings()
             store.getters.chatModel.init()
             this.getModelOptions()
-            storage.save()
+            storage.saveSys()
           } catch (e) {
             this.$message.error(e.message)
           }
@@ -111,13 +111,13 @@ export default {
     openaiSettings: {
       handler: function(newVal, oldVal) {
         this.chatModel.loadSettings()
-        storage.save()
+        storage.saveSys()
       },
       deep: true
     },
     openaiAdvancedTabCheckboxes: {
       handler: function(newVal, oldVal) {
-        storage.save()
+        storage.saveSys()
       },
       deep: true
     }

@@ -44,6 +44,7 @@
 <script>
 import { register } from '../../../../../vue-advanced-chat-md'
 import { mapGetters } from 'vuex'
+import storage from '@/utils/sys/storage'
 
 register()
 
@@ -289,6 +290,7 @@ export default {
       }
       const onFinish = () => {
         this.canSendMessage = true
+        storage.saveChats()
       }
       // console.log(files)
       // console.log(files.length)

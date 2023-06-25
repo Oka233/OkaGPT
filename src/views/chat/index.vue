@@ -2,12 +2,15 @@
   <div class="dashboard-container">
     <ChatWindow
       class="chat-left"
-      @save="saveChats(false)"
+      @save="storage.saveChats()"
     />
     <div class="chat-right">
       <el-button type="primary" @click="addChat">开始新的对话</el-button>
-      <el-button type="primary" @click="saveChats">保存对话 (localstorage)</el-button>
-      <el-button type="primary" @click="removeAllChats">清空对话历史</el-button>
+<!--      <el-button type="primary" @click="storage.saveChats">保存对话 (localstorage)</el-button>-->
+      <el-button
+        :type="removeButtonStateOptions[removeButtonState].type"
+        @click="removeAllChats"
+      >{{ removeButtonStateOptions[removeButtonState].text }}</el-button>
       <ChatSettings />
       <ChatStatus />
     </div>
@@ -27,6 +30,23 @@ export default {
   components: { ChatWindow, ChatStatus, ChatSettings },
   data() {
     return {
+      storage: storage,
+      removeButtonState: 'normal',
+      removeButtonStateOptions: {
+        normal: {
+          text: '清空对话历史',
+          type: 'primary'
+        },
+        confirm: {
+          text: '确认清空',
+          type: 'danger'
+        },
+        done: {
+          text: '已清空',
+          type: 'primary'
+        }
+      },
+      removeButtonStateTimer: null
     }
   },
   computed: {
@@ -40,20 +60,34 @@ export default {
     }
   },
   methods: {
-    saveChats(notify = true) {
-      const savedChats = this.chats.map(chat => {
-        return chat.toSave()
-      })
-      storage.set('savedChats', JSON.stringify(savedChats))
-      if (notify) this.$message.success('对话列表已保存')
-    },
     removeAllChats() {
-      this.$store.commit('chat/REMOVE_ALL_CHATS')
-      this.saveChats(false)
-      this.$message.success('对话历史已删除')
+      if (this.removeButtonState === 'done') {
+        return
+      }
+      if (this.removeButtonState === 'normal') {
+        this.removeButtonState = 'confirm'
+        clearTimeout(this.removeButtonStateTimer)
+        this.removeButtonStateTimer = setTimeout(() => {
+          this.removeButtonState = 'normal'
+        }, 3000)
+        return
+      }
+      if (this.removeButtonState === 'confirm') {
+        this.$store.commit('chat/REMOVE_ALL_CHATS')
+        setTimeout(() => {
+          this.addChat()
+        }, 1)
+        // this.addChat()
+        this.removeButtonState = 'done'
+        clearTimeout(this.removeButtonStateTimer)
+        this.removeButtonStateTimer = setTimeout(() => {
+          this.removeButtonState = 'normal'
+        }, 1500)
+      }
     },
     addChat() {
       this.$store.commit('chat/ADD_CHAT', new Chat())
+      storage.saveChats()
     }
   }
 }

@@ -24,6 +24,26 @@ $lightFont: #fff;
   color: $themeBase;
   border-color: $themeBase;
 }
+$dangerBase: #c70000;
+.el-button--danger {
+  background-color: #000;
+  color: $dangerBase;
+  border-color: #ffffff;
+  border-radius: 0;
+}
+.el-button--danger:hover,
+.el-button--danger:focus {
+  background-color: $dangerBase;
+  border-color: $theme1;
+  color: #fff;
+}
+.el-button--danger.is-active,
+.el-button--danger.is-active:hover,
+.el-button--danger.is-active:focus {
+  background-color: $dangerBase;
+  color: #fff;
+  border-color: #fff;
+}
 
 // el-tabs
 .el-tabs--border-card {
