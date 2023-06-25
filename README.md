@@ -1,6 +1,6 @@
 # OkaGPT
 
-> A web-ui for openai api based on vue & element-ui
+> 可扩展GPT WebUI
 >
 > demo: https://oka233.github.io/GPT/
 
