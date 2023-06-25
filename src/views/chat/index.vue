@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <ChatContainer
+    <ChatWindow
       class="chat-left"
       @save="saveChats(false)"
     />
@@ -16,15 +16,15 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import ChatSettings from '@/components/ChatSettings/index.vue'
-import ChatStatus from '@/components/ChatStatus/index.vue'
+import ChatSettings from '@/components/Chat/ChatSettings/index.vue'
+import ChatStatus from '@/components/Chat/ChatStatus/index.vue'
 import storage from '@/utils/sys/storage'
 import { Chat } from '@/utils/Chat/Chat'
-import ChatContainer from '@/components/ChatContainer/index.vue'
+import ChatWindow from '@/components/Chat/ChatWindow/index.vue'
 
 export default {
   name: 'Chat',
-  components: { ChatContainer, ChatStatus, ChatSettings },
+  components: { ChatWindow, ChatStatus, ChatSettings },
   data() {
     return {
     }

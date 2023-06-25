@@ -42,12 +42,12 @@
 </template>
 
 <script>
-import { register } from 'vue-advanced-chat-md'
+import { register } from '../../../../../vue-advanced-chat-md'
 import { mapGetters } from 'vuex'
 register()
 
 export default {
-  name: 'ChatContainer',
+  name: 'ChatWindow',
   props: {
     addChat: {
       type: Function

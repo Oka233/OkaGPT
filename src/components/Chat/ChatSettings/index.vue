@@ -60,7 +60,7 @@
 
 <script>
 import storage from '@/utils/sys/storage'
-import ModelOption from '@/components/ChatSettings/ModelOption.vue'
+import ModelOption from '@/components/Chat/ChatSettings/ModelOption.vue'
 import { mapGetters } from 'vuex'
 export default {
   name: 'ChatSettings',
