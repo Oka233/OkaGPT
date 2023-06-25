@@ -31,7 +31,7 @@ export class OpenAI {
           storage.set('openai.apiKey', key)
           const len = res.data.data.filter(item => item.id.indexOf('gpt') > -1).length
           console.log(res.data.data.map(item => item.id))
-          resolve(`API key已验证。当前有${len}个GPT模型可用`)
+          resolve(`Api key已验证。当前有${len}个GPT模型可用`)
         })
         .catch(e => {
           reject(e.response.data.error)

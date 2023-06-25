@@ -33,7 +33,7 @@
     :rooms="JSON.stringify(rooms)"
     :messages="JSON.stringify(messages)"
     :room-actions="JSON.stringify(roomActions)"
-    :send-disabled="String(!canSendMessage)"
+    :send-disabled="String(!canSendMessage || preview)"
     @send-message="sendMessage($event.detail[0])"
     @fetch-messages="openChat($event.detail[0])"
     @room-action-handler="roomActionHandler($event.detail[0])"
@@ -44,24 +44,21 @@
 <script>
 import { register } from '../../../../../vue-advanced-chat-md'
 import { mapGetters } from 'vuex'
+
 register()
 
 export default {
   name: 'ChatWindow',
-  props: {
-    addChat: {
-      type: Function
-    }
-  },
   computed: {
     ...mapGetters([
       'chats',
       'chatDisabled',
       'currentRoomId',
-      'chatModel'
+      'chatModel',
+      'preview'
     ]),
     rooms() {
-      const rooms = this.chats.map((c, index) => {
+      return this.chats.map((c, index) => {
         return {
           roomId: `${c.chatId}`,
           roomName: c.title,
@@ -78,7 +75,6 @@ export default {
           ]
         }
       })
-      return rooms
     },
     currentChat() {
       return this.chats.find(c => c.chatId === this.currentRoomId)

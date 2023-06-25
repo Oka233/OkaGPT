@@ -2,7 +2,7 @@
   <el-tabs v-model="activeName" type="border-card">
     <el-tab-pane label="基本设置" name="first">
       <div class="first-tab-container">
-        <el-input v-model="dummyApiKey" placeholder="输入API Key" class="apikey-input" show-password />
+        <el-input v-model="dummyApiKey" placeholder="输入api key" class="apikey-input" @change="apiKey=dummyApiKey" />
         <el-select v-model="openaiSettings.model" placeholder="选择对话模型">
           <el-option
             v-for="item in modelOptions"
@@ -62,6 +62,9 @@
 import storage from '@/utils/sys/storage'
 import ModelOption from '@/components/Chat/ChatSettings/ModelOption.vue'
 import { mapGetters } from 'vuex'
+import { IChatModel } from '@/utils/Models/IChatModel'
+import store from '@/store'
+
 export default {
   name: 'ChatSettings',
   components: { ModelOption },
@@ -84,12 +87,24 @@ export default {
   },
   watch: {
     apiKey: {
-      handler: function(newVal, oldVal) {
-        if (newVal !== oldVal) {
-          this.modelOptions = []
-          this.getModelOptions()
-          this.$store.commit('openai/setApiKey', newVal)
-          storage.save()
+      handler: async function(newVal, oldVal) {
+        console.log(newVal, this.openaiSettings.apiKey)
+        if (newVal !== this.openaiSettings.apiKey) {
+          try {
+            const chatModel = new IChatModel('openai')
+            const message = await chatModel.verifyKey(newVal)
+            this.$message.success(message)
+            this.$store.commit('sys/setPlatformType', 'openai')
+            this.$store.commit('sys/setChatModel', 'openai')
+            this.$store.commit('openai/setApiKey', newVal)
+            this.$store.commit('sys/readyToGo')
+            store.getters.chatModel.loadSettings()
+            store.getters.chatModel.init()
+            this.getModelOptions()
+            storage.save()
+          } catch (e) {
+            this.$message.error(e.message)
+          }
         }
       }
     },
@@ -110,6 +125,7 @@ export default {
   created() {
     this.dummyApiKey = this.openaiSettings.apiKey
     this.apiKey = this.openaiSettings.apiKey
+    this.getModelOptions()
   },
   methods: {
     getModelOptions() {

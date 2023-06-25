@@ -7,6 +7,7 @@ const getters = {
   platformType: state => state.sys.platformType,
   chatModel: state => state.sys.chatModel,
   ready: state => state.sys.ready,
+  preview: state => state.sys.preview,
   loadedSave: state => state.sys.loadedSave,
 
   openaiSettings: state => state.openai.settings,

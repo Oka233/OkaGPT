@@ -4,6 +4,7 @@ const state = {
   platformType: null,
   chatModel: null,
   ready: false,
+  preview: false,
   loadedSave: false
 }
 
@@ -14,8 +15,12 @@ const mutations = {
   setChatModel: (state, platformType) => {
     state.chatModel = new IChatModel(platformType)
   },
-  ready: (state, ready) => {
-    state.ready = ready
+  readyToGo: (state) => {
+    state.preview = false
+    state.ready = true
+  },
+  engagePreviewMode: (state) => {
+    state.preview = true
   },
   load: (state, save) => {
     if (save) {
@@ -30,6 +35,7 @@ const mutations = {
       state.chatModel.loadSettings()
     }
     state.ready = false
+    state.preview = false
     state.loadedSave = true
   }
 }

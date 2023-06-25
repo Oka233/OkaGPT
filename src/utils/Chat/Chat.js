@@ -68,6 +68,9 @@ export class Chat {
     ]
   }
   streamNextMessage(message, callback1, onFinish) {
+    if (!this.chatModel) {
+      this.chatModel = store.getters.chatModel
+    }
     if (this.messageHistory.len() === 0 && message) {
       this.setTitle(message)
       // return

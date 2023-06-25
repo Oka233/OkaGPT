@@ -15,6 +15,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="apiKeyVerifying" @click="confirm">确定</el-button>
+          <el-button type="primary" @click="preview">预览</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -60,7 +61,7 @@ export default {
         this.$store.commit('sys/setPlatformType', this.platformForm.platformType)
         this.$store.commit('sys/setChatModel', this.platformForm.platformType)
         this.$store.commit('openai/setApiKey', this.platformForm.apiKey)
-        this.$store.commit('sys/ready', true)
+        this.$store.commit('sys/readyToGo')
         store.getters.chatModel.loadSettings()
         store.getters.chatModel.init()
         // 存储设置
@@ -71,6 +72,10 @@ export default {
         this.$message.error(e.message)
       }
       this.apiKeyVerifying = false
+    },
+    preview() {
+      this.$store.commit('sys/engagePreviewMode')
+      router.push({ path: `/chat` })
     }
   }
 }

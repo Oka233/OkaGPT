@@ -9,13 +9,13 @@ router.beforeEach(async(to, from, next) => {
     storage.load()
   }
   if (to.path === '/chat') {
-    if (store.getters.ready) {
+    if (store.getters.ready || store.getters.preview) {
       next()
     } else if (store.getters.platformType) {
       // 根据存储的key进行验证
       try {
         const loadingInstance = Loading.service({
-          text: '正在验证API key...'
+          text: '正在验证api key...'
         })
         const message = await store.getters.chatModel.verifyKey()
         // setTimeout(() => {
@@ -23,7 +23,7 @@ router.beforeEach(async(to, from, next) => {
         // }, 100)
         Message.success(message)
         store.getters.chatModel.init()
-        store.commit('sys/ready', true)
+        store.commit('sys/readyToGo')
         next()
       } catch (e) {
         Message.error(`本地设置过期，请重新设置。${e.message}}`)
@@ -31,7 +31,6 @@ router.beforeEach(async(to, from, next) => {
       }
     } else {
       // 未设置过key,跳转到设置页面
-      Message.warning('请先填写初始设置')
       next({ path: '/start-wizard' })
     }
   } else {
