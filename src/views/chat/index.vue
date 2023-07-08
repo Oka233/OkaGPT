@@ -86,7 +86,7 @@ export default {
       }
     },
     addChat() {
-      this.$store.commit('chat/addChat', new Chat())
+      this.$store.commit('chat/addChat', new Chat({}))
       storage.saveChats()
     }
   }

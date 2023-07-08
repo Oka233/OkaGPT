@@ -11,22 +11,6 @@
             :value="item.value"
           />
         </el-select>
-<!--        <div class="switch-container">-->
-<!--          <span>-->
-<!--            流式传输-->
-<!--          </span>-->
-<!--          <el-switch-->
-<!--            v-model="openaiSettings.stream"-->
-<!--          />-->
-<!--        </div>-->
-<!--        <div class="switch-container">-->
-<!--          <span>-->
-<!--            问候语-->
-<!--          </span>-->
-<!--          <el-switch-->
-<!--            v-model="openaiSettings.hello"-->
-<!--          />-->
-<!--        </div>-->
       </div>
     </el-tab-pane>
     <el-tab-pane label="高级设置" name="second">
@@ -129,7 +113,7 @@ export default {
   },
   methods: {
     getModelOptions() {
-      this.chatModel.getModels().then(res => {
+      this.chatModel.getAvailableModels().then(res => {
         console.log(res)
         this.modelOptions = res.map(modelName => {
           return {

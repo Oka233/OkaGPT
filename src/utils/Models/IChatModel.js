@@ -12,7 +12,6 @@ export class IChatModel {
     }
   }
   init(...args) {
-    // eslint-disable-next-line new-cap
     this.chatModel = new this.chatModelClass(...args)
   }
   async verifyKey(...args) {
@@ -21,22 +20,22 @@ export class IChatModel {
   loadSettings(settings) {
     this.chatModelClass.loadSettings(settings)
   }
-  saveSettings() {
-    this.chatModelClass.saveSettings()
+  getAvailableModels() {
+    return this.chatModelClass.getAvailableModels()
   }
-  getSetting(key) {
-    return this.chatModelClass.getSetting(key)
-  }
-  getModels() {
-    return this.chatModelClass.getModels()
-  }
-  chat(...args) {
-    return this.chatModel.chat(...args)
-  }
-  streamChat(...args) {
-    return this.chatModel.streamChat(...args)
-  }
-  completion(...args) {
-    return this.chatModel.completion(...args)
+  streamChat(
+    messages,
+    onBegin,
+    onReceive,
+    onFinish,
+    sysMessage
+  ) {
+    return this.chatModel.streamChat(
+      messages,
+      onBegin,
+      onReceive,
+      onFinish,
+      sysMessage
+    )
   }
 }

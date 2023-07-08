@@ -2,8 +2,6 @@ const state = {
   settings: {
     apiKey: '',
     model: '',
-    stream: true,
-    hello: false,
     temperature: 1,
     top_p: 1,
     n: 1,

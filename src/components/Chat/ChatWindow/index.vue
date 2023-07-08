@@ -15,7 +15,6 @@
       IS_TYPING: 'is writing...',
       CANCEL_SELECT_MESSAGE: 'Cancel'
     })"
-    :class="{disabled: chatDisabled}"
     show-add-room="false"
     show-files="false"
     :height="`${vacHeight}px`"
@@ -53,7 +52,6 @@ export default {
   computed: {
     ...mapGetters([
       'chats',
-      'chatDisabled',
       'currentChatId',
       'chatModel',
       'preview',
@@ -249,75 +247,35 @@ export default {
     resizeHandler() {
       this.vacHeight = window.innerHeight - 51
     },
-    getNoneStreamingMessage(currentChat, messageContent) {
+    getStreamingMessage(currentChat, messageContent) {
       const messagesBefore = currentChat.getMessageHistory()
-      const message = messageContent !== undefined ? { content: messageContent, senderId: 'me_id' } : undefined
-      const [messagePromise, messageSent] = currentChat.nextMessage(message)
-      if (message) {
-        // 如果这里不使用messagesBefore而是直接使用this.messages，会导致切换room后加载到错误的消息
-        this.messages = [...messagesBefore, ...messageSent]
-      }
-      messagePromise
-        .then(res => {
+      currentChat.streamNextMessage(
+        {
+          content: messageContent,
+          senderId: 'me_id'
+        },
+        () => {},
+        (appendMessages) => {
           if (currentChat.chatId === this.currentChatId) {
-            this.messages = messageSent
-              ? [...messagesBefore, ...messageSent, ...res]
-              : [...messagesBefore, ...res]
+            this.messages = [...messagesBefore, ...appendMessages]
           }
-        })
-        .catch(e => {
-          this.$message.error(e.message)
-        })
-    },
-    getStreamingMessage(currentChat, messageContent, files) {
-      // this.typingUsers.push(currentChat.chatId)
-      const messagesBefore = currentChat.getMessageHistory()
-      // 切换到新的聊天时，先提供一个空消息，不然新聊天显示会延迟。这个空消息在streamAnswer中会被替换掉
-      if (messagesBefore.length === 0 && this.chatModel.getSetting('hello')) {
-        this.messages = currentChat.getBlankMessage()
-      }
-      const streamAnswer = (messages, messageSent, isLast) => {
-        if (currentChat.chatId === this.currentChatId) {
-          this.messages = messageSent
-            ? [...messagesBefore, ...messageSent, ...messages]
-            : [...messagesBefore, ...messages]
+        },
+        () => {
+          this.canSendMessage = true
+          storage.saveChats()
         }
-        // if (isLast) {
-        //   this.typingUsers = this.typingUsers.filter(u => u !== currentChat.chatId)
-        // }
-      }
-      const onFinish = () => {
-        this.canSendMessage = true
-        storage.saveChats()
-      }
-      // console.log(files)
-      // console.log(files.length)
-      const message = messageContent !== undefined ? { content: messageContent, files: files, senderId: 'me_id' } : undefined
-      const messageSent = currentChat.streamNextMessage(message, streamAnswer, onFinish)
-      if (messageSent) {
-        this.messages = [...this.messages, ...messageSent]
-      }
+      )
     },
     getMessageFromModel(...args) {
-      if (this.chatModel.getSetting('stream')) {
-        this.canSendMessage = false
-        this.getStreamingMessage(...args)
-      } else {
-        this.getNoneStreamingMessage(...args)
-      }
+      this.canSendMessage = false
+      this.getStreamingMessage(...args)
     },
     openChat({ room, options }) {
       this.$store.commit('chat/setCurrentChatId', room.roomId)
-      const messageHistory = this.currentChat.getMessageHistory()
-      if (messageHistory.length === 0 && this.chatModel.getSetting('hello')) {
-        // 问候语
-        this.getMessageFromModel(this.currentChat)
-      } else {
-        this.messages = messageHistory
-      }
+      this.messages = this.currentChat.getMessageHistory()
     },
     sendMessage({ roomId, content, files, replyMessage, usersTag }) {
-      this.getMessageFromModel(this.currentChat, content, files)
+      this.getMessageFromModel(this.currentChat, content)
     },
     roomActionHandler({ roomId, action }) {
       switch (action.name) {

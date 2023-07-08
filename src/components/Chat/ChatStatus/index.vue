@@ -1,21 +1,13 @@
 <template>
-  <!--  <el-card>-->
-  <!--    <div slot="header">-->
-  <!--      <span>传输状态</span>-->
-  <!--    </div>-->
-  <!--    {{currentChat && currentChat.messageHistory.usage}}-->
-  <!--    {{currentChat && currentChat.finishStatus}}-->
   <div v-if="showStatus" class="finish-reason-container">
     <el-tag
       v-for="(item, index) in statusTags"
       :key="index"
-      :type="item[0]"
+      :type="item.type"
     >
-      {{ item[1] }}
+      {{ item.text }}
     </el-tag>
   </div>
-  <!--    <el-progress v-for="(item, index) in progressList" :key="index" :percentage="item.percentage" :format="item.format"></el-progress>-->
-  <!--  </el-card>-->
 </template>
 
 <script>
@@ -38,53 +30,51 @@ export default {
       return this.currentChat !== null
     },
     statusTags() {
-      return this.currentChat.finishStatus.map(r => {
+      if (!this.currentChat) return []
+      const finishStatus = []
+      // this.currentChat.finishStatus中有empty，转换为undefined
+      for (let i = 0; i < this.currentChat.finishStatus.length; i++) {
+        finishStatus.push(this.currentChat.finishStatus[i])
+      }
+      return finishStatus.map(r => {
         switch (r) {
           case 'stop': {
-            return ['success', '已完成']
+            return {
+              type: 'success',
+              text: '已完成'
+            }
           }
           case 'length': {
-            return ['warning', '对话过长']
+            return {
+              type: 'warning',
+              text: '对话过长'
+            }
           }
           case 'content_filter': {
-            return ['warning', '触发内容检测']
+            return {
+              type: 'warning',
+              text: '触发内容检测'
+            }
           }
           case null: {
-            return ['', '传输中']
+            return {
+              type: '',
+              text: '传输中'
+            }
           }
           case 'waiting' : {
-            // empty
-            return ['info', '等待中']
+            return {
+              type: 'info',
+              text: '等待中'
+            }
           }
-          default : {
-            // empty
-            return ['', '传输中']
-          }
+        }
+        return {
+          type: '',
+          text: '传输中'
         }
       })
     }
-    // progressList() {
-    //   return [
-    //     {
-    //       percentage: this.usage.prompt_tokens,
-    //       format: () => {
-    //         return `${this.usage.prompt_tokens} / ${this.maxTokens.prompt_tokens}`
-    //       }
-    //     },
-    //     {
-    //       percentage: this.usage.completion_tokens,
-    //       format: () => {
-    //         return `${this.usage.completion_tokens} / ${this.maxTokens.completion_tokens}`
-    //       }
-    //     },
-    //     {
-    //       percentage: this.usage.total_tokens,
-    //       format: () => {
-    //         return `${this.usage.total_tokens} / ${this.maxTokens.total_tokens}`
-    //       }
-    //     }
-    //   ]
-    // }
   }
 }
 </script>

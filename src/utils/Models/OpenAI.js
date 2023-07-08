@@ -4,7 +4,7 @@ import storage from '@/utils/sys/storage'
 import store from '@/store'
 
 export class OpenAI {
-  sysMessage = 'You are an assistant, a friend or whatever you are supposed to be. ' +
+  sysMessage = 'You are ChatGPT, a large language model trained by OpenAI. ' +
     'Your responses should be written in the same language as the previously received message' +
     'Your responses should be informative and concise. ' +
     'You should ask for more information if the question is not well-determined enough. ' +
@@ -41,10 +41,7 @@ export class OpenAI {
   static loadSettings() {
     this.runningSettings = store.getters.openaiSettings
   }
-  static saveSettings() {
-    storage.set('openai', this.runningSettings)
-  }
-  static getModels() {
+  static getAvailableModels() {
     const configuration = new Configuration({
       apiKey: OpenAI.getSetting('apiKey')
     })
@@ -87,7 +84,17 @@ export class OpenAI {
       }
     )
   }
-  async streamChat(messages, callback1 = () => {}, callback2 = () => {}, onFinish = () => {}, sysMessage = this.sysMessage) {
+  async streamChat(
+    messages,
+    onBegin,
+    onReceive,
+    onFinish,
+    sysMessage
+  ) {
+    onBegin = onBegin || (() => {})
+    onReceive = onReceive || (() => {})
+    onFinish = onFinish || (() => {})
+    sysMessage = sysMessage === undefined ? this.sysMessage : sysMessage
     const splitRes = (str) => {
       // console.log(str)
       let count = str.split(',"finish_reason":').length - 1
@@ -124,6 +131,8 @@ export class OpenAI {
         body[key] = value
       }
     })
+    // 先返回空信息占位
+    onBegin(new Array(body.n || 1).fill('...'))
     console.log('requestBody', body)
     const response = await fetch('https://api.openai.com/v1/chat/completions',
       {
@@ -135,8 +144,6 @@ export class OpenAI {
         body: JSON.stringify(body)
       }
     )
-    // 先返回空信息占位
-    callback1(new Array(body.n || 1).fill(''))
 
     // console.log('response', response)
     const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader()
@@ -162,7 +169,7 @@ export class OpenAI {
       try {
         const jsons = splitRes(str).map(j => JSON.parse(j))
         // console.log(jsons)
-        const ans = new Array(body.n || 1).fill('')
+        const reply = new Array(body.n || 1).fill('')
         const finishReasons = new Array(body.n || 1)
         const usage = {
           prompt_tokens: 0,
@@ -172,15 +179,14 @@ export class OpenAI {
         jsons.forEach(json => {
           const index = json.choices[0]?.index
           if (index !== undefined) {
-            ans[index] += json.choices[0].delta?.content || ''
+            reply[index] += json.choices[0].delta?.content || ''
             finishReasons[index] = json.choices[0].finish_reason
           }
           // usage.prompt_tokens += json.usage.prompt_tokens
           // usage.completion_tokens += json.usage.completion_tokens
           // usage.total_tokens += json.usage.total_tokens
         })
-        callback1(ans)
-        callback2(usage, finishReasons)
+        onReceive({ reply, usage, finishReasons })
       } catch (e) {
         console.log('split failed', e)
         console.log(str, splitRes(str))
